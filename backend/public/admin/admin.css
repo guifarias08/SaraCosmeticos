@@ -1,0 +1,92 @@
+* { box-sizing: border-box; }
+body {
+  font-family: 'Segoe UI', system-ui, sans-serif;
+  margin: 0;
+  background: #fdf6f8;
+  color: #33222a;
+}
+
+/* Login */
+.login-body {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 100vh;
+}
+.login-card {
+  background: #fff;
+  padding: 2.5rem;
+  border-radius: 16px;
+  box-shadow: 0 10px 30px rgba(196, 74, 122, 0.15);
+  width: min(360px, 90vw);
+  text-align: center;
+}
+.login-card h1 { margin: 0 0 0.2rem; color: #c44a7a; }
+.subtitle { color: #8a7480; margin-bottom: 1.5rem; }
+
+/* Topbar */
+.topbar {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 1rem 2rem;
+  background: #c44a7a;
+  color: #fff;
+}
+.topbar h1 { font-size: 1.2rem; margin: 0; }
+
+.container {
+  max-width: 1000px;
+  margin: 2rem auto;
+  padding: 0 1rem;
+  display: flex;
+  flex-direction: column;
+  gap: 2rem;
+}
+
+.form-card, .table-card {
+  background: #fff;
+  border-radius: 12px;
+  padding: 1.5rem;
+  box-shadow: 0 4px 16px rgba(0,0,0,0.06);
+}
+
+.grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+  gap: 0.8rem;
+}
+
+label { display: block; font-size: 0.85rem; margin: 0.6rem 0 0.2rem; color: #5c4a52; }
+input, textarea {
+  width: 100%;
+  padding: 0.55rem 0.7rem;
+  border: 1px solid #e7d3da;
+  border-radius: 8px;
+  font-size: 0.95rem;
+}
+textarea { resize: vertical; }
+
+button {
+  cursor: pointer;
+  border: none;
+  border-radius: 8px;
+  padding: 0.6rem 1.2rem;
+  font-size: 0.95rem;
+  background: #c44a7a;
+  color: #fff;
+}
+button:hover { background: #ab3d68; }
+.btn-secondary { background: #efe0e5; color: #5c4a52; }
+.btn-secondary:hover { background: #e2c9d1; }
+.btn-link { background: none; color: #c44a7a; padding: 0.2rem 0.4rem; }
+.btn-link:hover { text-decoration: underline; background: none; }
+.btn-danger { color: #b93030; }
+
+.form-actions { display: flex; gap: 0.6rem; margin-top: 1rem; }
+
+.erro { color: #b93030; margin-top: 0.8rem; font-size: 0.9rem; }
+
+table { width: 100%; border-collapse: collapse; margin-top: 0.5rem; }
+th, td { text-align: left; padding: 0.6rem 0.5rem; border-bottom: 1px solid #f0e2e7; font-size: 0.9rem; }
+th { color: #8a7480; font-weight: 600; }

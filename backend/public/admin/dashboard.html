@@ -1,0 +1,211 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<meta name="robots" content="noindex, nofollow" />
+<title>Painel Admin — Sara Cosméticos</title>
+<link rel="stylesheet" href="admin.css" />
+</head>
+<body>
+  <header class="topbar">
+    <h1>Sara Cosméticos — Painel</h1>
+    <button id="btnLogout" class="btn-secondary">Sair</button>
+  </header>
+
+  <main class="container">
+    <section class="form-card">
+      <h2 id="formTitulo">Novo produto</h2>
+      <form id="produtoForm">
+        <input type="hidden" id="produtoId" />
+
+        <div class="grid">
+          <div>
+            <label for="codigo">Código *</label>
+            <input id="codigo" required />
+          </div>
+          <div>
+            <label for="nome">Nome *</label>
+            <input id="nome" required />
+          </div>
+          <div>
+            <label for="marca">Marca</label>
+            <input id="marca" />
+          </div>
+          <div>
+            <label for="categoria">Categoria *</label>
+            <input id="categoria" required placeholder="maquiagem, skincare, cabelos..." />
+          </div>
+          <div>
+            <label for="preco">Preço (R$) *</label>
+            <input id="preco" type="number" step="0.01" min="0" required />
+          </div>
+          <div>
+            <label for="precoPromocional">Preço promocional (R$)</label>
+            <input id="precoPromocional" type="number" step="0.01" min="0" />
+          </div>
+          <div>
+            <label for="quantidade">Quantidade em estoque *</label>
+            <input id="quantidade" type="number" min="0" required />
+          </div>
+          <div>
+            <label for="imagemUrl">URL da imagem</label>
+            <input id="imagemUrl" placeholder="https://..." />
+          </div>
+        </div>
+
+        <label for="descricao">Descrição</label>
+        <textarea id="descricao" rows="2"></textarea>
+
+        <div class="form-actions">
+          <button type="submit" id="btnSalvar">Salvar produto</button>
+          <button type="button" id="btnCancelarEdicao" class="btn-secondary" hidden>Cancelar edição</button>
+        </div>
+        <p id="formMsg" class="erro" hidden></p>
+      </form>
+    </section>
+
+    <section class="table-card">
+      <h2>Produtos cadastrados</h2>
+      <table>
+        <thead>
+          <tr>
+            <th>Código</th>
+            <th>Nome</th>
+            <th>Categoria</th>
+            <th>Preço</th>
+            <th>Estoque</th>
+            <th>Ativo</th>
+            <th>Ações</th>
+          </tr>
+        </thead>
+        <tbody id="tabelaProdutos">
+          <tr><td colspan="7">Carregando...</td></tr>
+        </tbody>
+      </table>
+    </section>
+  </main>
+
+  <script src="admin.js"></script>
+  <script>
+    exigirLoginOuRedirecionar();
+    document.getElementById('btnLogout').addEventListener('click', logout);
+
+    const form = document.getElementById('produtoForm');
+    const formMsg = document.getElementById('formMsg');
+    const btnCancelarEdicao = document.getElementById('btnCancelarEdicao');
+
+    async function carregarProdutos() {
+      const tbody = document.getElementById('tabelaProdutos');
+      try {
+        const produtos = await apiFetch('/api/produtos/admin/todos');
+        if (produtos.length === 0) {
+          tbody.innerHTML = '<tr><td colspan="7">Nenhum produto cadastrado ainda.</td></tr>';
+          return;
+        }
+        tbody.innerHTML = produtos.map(produtoParaLinha).join('');
+      } catch (erro) {
+        tbody.innerHTML = `<tr><td colspan="7">Erro ao carregar: ${erro.message}</td></tr>`;
+      }
+    }
+
+    function produtoParaLinha(p) {
+      const preco = p.preco_promocional
+        ? `<s>R$ ${p.preco.toFixed(2)}</s> R$ ${p.preco_promocional.toFixed(2)}`
+        : `R$ ${p.preco.toFixed(2)}`;
+      return `
+        <tr>
+          <td>${p.codigo}</td>
+          <td>${p.nome}</td>
+          <td>${p.categoria}</td>
+          <td>${preco}</td>
+          <td>${p.quantidade_estoque}</td>
+          <td>${p.ativo ? 'Sim' : 'Não'}</td>
+          <td>
+            <button class="btn-link" onclick="editarProduto(${p.id})">Editar</button>
+            <button class="btn-link btn-danger" onclick="apagarProduto(${p.id})">Apagar</button>
+          </td>
+        </tr>`;
+    }
+
+    let produtosCache = [];
+
+    async function editarProduto(id) {
+      if (!produtosCache.length) produtosCache = await apiFetch('/api/produtos/admin/todos');
+      const p = produtosCache.find((item) => item.id === id);
+      if (!p) return;
+
+      document.getElementById('formTitulo').textContent = `Editando: ${p.nome}`;
+      document.getElementById('produtoId').value = p.id;
+      document.getElementById('codigo').value = p.codigo;
+      document.getElementById('nome').value = p.nome;
+      document.getElementById('marca').value = p.marca || '';
+      document.getElementById('categoria').value = p.categoria;
+      document.getElementById('preco').value = p.preco;
+      document.getElementById('precoPromocional').value = p.preco_promocional || '';
+      document.getElementById('quantidade').value = p.quantidade_estoque;
+      document.getElementById('imagemUrl').value = p.imagem_url || '';
+      document.getElementById('descricao').value = p.descricao || '';
+      btnCancelarEdicao.hidden = false;
+      window.scrollTo({ top: 0, behavior: 'smooth' });
+    }
+
+    function limparFormulario() {
+      form.reset();
+      document.getElementById('produtoId').value = '';
+      document.getElementById('formTitulo').textContent = 'Novo produto';
+      btnCancelarEdicao.hidden = true;
+    }
+
+    btnCancelarEdicao.addEventListener('click', limparFormulario);
+
+    async function apagarProduto(id) {
+      if (!confirm('Tem certeza que deseja apagar este produto?')) return;
+      try {
+        await apiFetch(`/api/produtos/admin/${id}`, { method: 'DELETE' });
+        produtosCache = [];
+        carregarProdutos();
+      } catch (erro) {
+        alert(erro.message);
+      }
+    }
+
+    form.addEventListener('submit', async (e) => {
+      e.preventDefault();
+      formMsg.hidden = true;
+
+      const id = document.getElementById('produtoId').value;
+      const corpo = {
+        codigo: document.getElementById('codigo').value,
+        nome: document.getElementById('nome').value,
+        marca: document.getElementById('marca').value,
+        categoria: document.getElementById('categoria').value,
+        preco: parseFloat(document.getElementById('preco').value),
+        preco_promocional: document.getElementById('precoPromocional').value
+          ? parseFloat(document.getElementById('precoPromocional').value)
+          : null,
+        quantidade_estoque: parseInt(document.getElementById('quantidade').value, 10),
+        imagem_url: document.getElementById('imagemUrl').value,
+        descricao: document.getElementById('descricao').value,
+        ativo: 1,
+      };
+
+      try {
+        if (id) {
+          await apiFetch(`/api/produtos/admin/${id}`, { method: 'PUT', body: JSON.stringify(corpo) });
+        } else {
+          await apiFetch('/api/produtos/admin', { method: 'POST', body: JSON.stringify(corpo) });
+        }
+        produtosCache = [];
+        limparFormulario();
+        carregarProdutos();
+      } catch (erro) {
+        formMsg.textContent = erro.message;
+        formMsg.hidden = false;
+      }
+    });
+
+    carregarProdutos();
+  </script>
+</body>
+</html>
