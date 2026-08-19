@@ -4,41 +4,15 @@ const { exigirAdmin } = require('../middleware/auth');
 
 const router = express.Router();
 
-/* ---------- ROTAS PÚBLICAS (usadas pela loja / clientes) ---------- */
-
-// GET /api/produtos -> só produtos ativos, sem dados sensíveis
-router.get('/', (req, res) => {
-  const produtos = db
-    .prepare(
-      `SELECT id, codigo, nome, marca, categoria, preco, preco_promocional, imagem_url, descricao
-       FROM produtos WHERE ativo = 1 ORDER BY criado_em DESC`
-    )
-    .all();
-  res.json(produtos);
-});
-
-// GET /api/produtos/:id -> detalhe de um produto ativo
-router.get('/:id', (req, res) => {
-  const produto = db
-    .prepare(
-      `SELECT id, codigo, nome, marca, categoria, preco, preco_promocional, imagem_url, descricao
-       FROM produtos WHERE id = ? AND ativo = 1`
-    )
-    .get(req.params.id);
-
-  if (!produto) return res.status(404).json({ erro: 'Produto não encontrado.' });
-  res.json(produto);
-});
-
 /* ---------- ROTAS DE ADMIN (exigem login, usadas só no painel) ---------- */
 
-// GET /api/admin/produtos -> lista TODOS os produtos, incluindo estoque e inativos
+// GET /api/produtos/admin/todos -> lista todos os produtos, incluindo estoque e inativos
 router.get('/admin/todos', exigirAdmin, (req, res) => {
   const produtos = db.prepare('SELECT * FROM produtos ORDER BY criado_em DESC').all();
   res.json(produtos);
 });
 
-// POST /api/admin/produtos -> cria novo produto
+// POST /api/produtos/admin -> cria novo produto
 router.post('/admin', exigirAdmin, (req, res) => {
   const {
     codigo, nome, marca, categoria,
@@ -70,7 +44,7 @@ router.post('/admin', exigirAdmin, (req, res) => {
   }
 });
 
-// PUT /api/admin/produtos/:id -> edita produto existente
+// PUT /api/produtos/admin/:id -> edita produto existente
 router.put('/admin/:id', exigirAdmin, (req, res) => {
   const existente = db.prepare('SELECT * FROM produtos WHERE id = ?').get(req.params.id);
   if (!existente) return res.status(404).json({ erro: 'Produto não encontrado.' });
@@ -95,11 +69,37 @@ router.put('/admin/:id', exigirAdmin, (req, res) => {
   res.json(atualizado);
 });
 
-// DELETE /api/admin/produtos/:id -> remove produto
+// DELETE /api/produtos/admin/:id -> remove produto
 router.delete('/admin/:id', exigirAdmin, (req, res) => {
   const info = db.prepare('DELETE FROM produtos WHERE id = ?').run(req.params.id);
   if (info.changes === 0) return res.status(404).json({ erro: 'Produto não encontrado.' });
   res.json({ ok: true });
+});
+
+/* ---------- ROTAS PÚBLICAS (usadas pela loja / clientes) ---------- */
+
+// GET /api/produtos -> só produtos ativos, sem dados sensíveis
+router.get('/', (req, res) => {
+  const produtos = db
+    .prepare(
+      `SELECT id, codigo, nome, marca, categoria, preco, preco_promocional, imagem_url, descricao
+       FROM produtos WHERE ativo = 1 ORDER BY criado_em DESC`
+    )
+    .all();
+  res.json(produtos);
+});
+
+// GET /api/produtos/:id -> detalhe de um produto ativo
+router.get('/:id(\\d+)', (req, res) => {
+  const produto = db
+    .prepare(
+      `SELECT id, codigo, nome, marca, categoria, preco, preco_promocional, imagem_url, descricao
+       FROM produtos WHERE id = ? AND ativo = 1`
+    )
+    .get(req.params.id);
+
+  if (!produto) return res.status(404).json({ erro: 'Produto não encontrado.' });
+  res.json(produto);
 });
 
 module.exports = router;
