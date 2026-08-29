@@ -1,55 +1,54 @@
 <!DOCTYPE html>
 <html lang="pt-BR">
-<head>
-<meta charset="UTF-8" />
-<meta name="viewport" content="width=device-width, initial-scale=1.0" />
-<meta name="robots" content="noindex, nofollow" />
-<title>Login Admin — Sara Cosméticos</title>
-<link rel="stylesheet" href="admin.css" />
-</head>
-<body class="login-body">
-  <main class="login-card">
-    <h1>Sara Cosméticos</h1>
-    <p class="subtitle">Painel administrativo</p>
+  <head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="robots" content="noindex, nofollow, noarchive">
+    <title>Acesso administrativo | Sara Cosméticos</title>
+    <link rel="stylesheet" href="admin.css">
+    <script src="admin.js" defer></script>
+    <script src="login.js" defer></script>
+  </head>
 
-    <form id="loginForm">
-      <label for="email">Email</label>
-      <input type="email" id="email" required autocomplete="username" />
+  <body class="login-page">
+    <main class="login-shell">
+      <section class="login-panel" aria-labelledby="loginTitle">
+        <div class="brand-mark" aria-hidden="true">SC</div>
+        <p class="eyebrow">Área restrita</p>
+        <h1 id="loginTitle">Sara Cosméticos</h1>
+        <p class="login-description">Entre para gerenciar produtos, preços e estoque.</p>
 
-      <label for="senha">Senha</label>
-      <input type="password" id="senha" required autocomplete="current-password" />
+        <form id="loginForm" novalidate>
+          <div class="field">
+            <label for="email">Email</label>
+            <input
+              id="email"
+              name="email"
+              type="email"
+              autocomplete="username"
+              maxlength="160"
+              required
+            >
+          </div>
 
-      <button type="submit">Entrar</button>
-      <p id="erroMsg" class="erro" hidden></p>
-    </form>
-  </main>
+          <div class="field">
+            <label for="senha">Senha</label>
+            <input
+              id="senha"
+              name="senha"
+              type="password"
+              autocomplete="current-password"
+              maxlength="200"
+              required
+            >
+          </div>
 
-  <script src="admin.js"></script>
-  <script>
-    document.getElementById('loginForm').addEventListener('submit', async (e) => {
-      e.preventDefault();
-      const email = document.getElementById('email').value;
-      const senha = document.getElementById('senha').value;
-      const erroMsg = document.getElementById('erroMsg');
-      erroMsg.hidden = true;
-
-      try {
-        const resposta = await fetch(`${API_BASE}/api/admin/login`, {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ email, senha }),
-        });
-        const dados = await resposta.json();
-
-        if (!resposta.ok) throw new Error(dados.erro || 'Erro ao entrar.');
-
-        localStorage.setItem('sara_admin_token', dados.token);
-        window.location.href = 'dashboard.html';
-      } catch (erro) {
-        erroMsg.textContent = erro.message;
-        erroMsg.hidden = false;
-      }
-    });
-  </script>
-</body>
+          <button class="button button-primary button-full" id="loginButton" type="submit">
+            Entrar no painel
+          </button>
+          <p class="form-message" id="loginMessage" role="alert" hidden></p>
+        </form>
+      </section>
+    </main>
+  </body>
 </html>

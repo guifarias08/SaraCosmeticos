@@ -1,4 +1,4 @@
-const db = require('./db');
+const { db, dbPath } = require('./db');
 
 function printSection(title) {
   console.log(`\n=== ${title} ===`);
@@ -18,6 +18,7 @@ function listColumns(tableName) {
 }
 
 printSection('Tabelas');
+console.log(`Banco: ${dbPath}`);
 const tables = listTables();
 console.table(tables);
 
@@ -35,9 +36,11 @@ for (const table of tables) {
 printSection('Resumo');
 const totalProdutos = db.prepare('SELECT COUNT(*) AS total FROM produtos').get().total;
 const totalAdmins = db.prepare('SELECT COUNT(*) AS total FROM admin_usuarios').get().total;
+const totalAuditoria = db.prepare('SELECT COUNT(*) AS total FROM admin_auditoria').get().total;
 console.table([
   { item: 'produtos', total: totalProdutos },
   { item: 'admin_usuarios', total: totalAdmins },
+  { item: 'admin_auditoria', total: totalAuditoria },
 ]);
 
 printSection('Produtos');
@@ -52,3 +55,10 @@ if (produtos.length === 0) {
 } else {
   console.table(produtos);
 }
+
+printSection('Administradores');
+console.table(db.prepare(`
+  SELECT id, nome, email, criado_em, atualizado_em, ultimo_login_em
+  FROM admin_usuarios
+  ORDER BY id
+`).all());

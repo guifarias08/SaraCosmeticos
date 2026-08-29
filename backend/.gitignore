@@ -4,4 +4,7 @@
 *.sqlite-journal
 *.sqlite-shm
 *.sqlite-wal
-.env.example
+backups/
+.test/
+uploads/*
+!uploads/.gitkeep

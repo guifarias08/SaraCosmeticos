@@ -1,55 +1,71 @@
 require('dotenv').config();
+
 const bcrypt = require('bcryptjs');
-const db = require('./db');
+const { db, recordAudit, runInTransaction } = require('./db');
 
-function seedAdmin() {
-  const email = process.env.ADMIN_EMAIL;
-  const senha = process.env.ADMIN_SENHA;
+const email = String(process.env.ADMIN_EMAIL || '').trim().toLowerCase();
+const password = String(process.env.ADMIN_SENHA || '');
+const name = String(process.env.ADMIN_NOME || 'Sara').trim();
 
-  if (!email || !senha) {
-    console.error('Defina ADMIN_EMAIL e ADMIN_SENHA no arquivo .env antes de rodar o seed.');
-    process.exit(1);
-  }
-
-  const existente = db.prepare('SELECT id FROM admin_usuarios WHERE email = ?').get(email);
-  if (existente) {
-    console.log(`Usuário admin "${email}" já existe. Nada foi alterado.`);
-    return;
-  }
-
-  const senhaHash = bcrypt.hashSync(senha, 10);
-  db.prepare(
-    'INSERT INTO admin_usuarios (nome, email, senha_hash) VALUES (?, ?, ?)'
-  ).run('Sara', email, senhaHash);
-
-  console.log(`Usuário admin criado com sucesso: ${email}`);
+if (!isValidEmail(email)) {
+  fail('Defina um ADMIN_EMAIL válido no arquivo .env.');
 }
 
-function seedProdutos() {
-  const total = db.prepare('SELECT COUNT(*) AS total FROM produtos').get().total;
-  if (total > 0) {
-    console.log('Já existem produtos cadastrados. Seed de produtos pulado.');
+if (password.length < 12) {
+  fail('ADMIN_SENHA deve ter pelo menos 12 caracteres.');
+}
+
+const existingAdmins = db.prepare('SELECT id, email FROM admin_usuarios ORDER BY id').all();
+
+if (existingAdmins.length > 0 && !existingAdmins.some((admin) => admin.email === email)) {
+  fail('Já existe outro administrador. Este projeto aceita apenas a conta da Sara.');
+}
+
+const passwordHash = bcrypt.hashSync(password, 12);
+
+runInTransaction(() => {
+  const existingAdmin = db.prepare('SELECT id FROM admin_usuarios WHERE email = ?').get(email);
+
+  if (existingAdmin) {
+    db.prepare(`
+      UPDATE admin_usuarios
+      SET nome = ?, senha_hash = ?, atualizado_em = datetime('now')
+      WHERE id = ?
+    `).run(name, passwordHash, existingAdmin.id);
+
+    recordAudit({
+      adminId: existingAdmin.id,
+      action: 'senha_atualizada',
+      entity: 'admin_usuarios',
+      entityId: existingAdmin.id,
+    });
+
+    console.log(`Acesso administrativo atualizado para ${email}.`);
     return;
   }
 
-  const produtos = [
-    { codigo: 'MAQ-001', nome: 'Base Líquida HD', marca: 'Maybelline', categoria: 'maquiagem', preco: 38.9, preco_promocional: null, quantidade_estoque: 20 },
-    { codigo: 'SKI-001', nome: 'Sérum Vitamina C', marca: "L'Oréal", categoria: 'skincare', preco: 89.9, preco_promocional: null, quantidade_estoque: 15 },
-    { codigo: 'CAB-001', nome: 'Máscara Capilar', marca: 'Kerastase', categoria: 'cabelos', preco: 95.0, preco_promocional: 72.0, quantidade_estoque: 10 },
-  ];
+  const result = db.prepare(`
+    INSERT INTO admin_usuarios (nome, email, senha_hash)
+    VALUES (?, ?, ?)
+  `).run(name, email, passwordHash);
 
-  const insert = db.prepare(`
-    INSERT INTO produtos (codigo, nome, marca, categoria, preco, preco_promocional, quantidade_estoque)
-    VALUES (@codigo, @nome, @marca, @categoria, @preco, @preco_promocional, @quantidade_estoque)
-  `);
-
-  const insertMany = db.transaction((lista) => {
-    for (const produto of lista) insert.run(produto);
+  recordAudit({
+    adminId: Number(result.lastInsertRowid),
+    action: 'admin_criado',
+    entity: 'admin_usuarios',
+    entityId: Number(result.lastInsertRowid),
   });
 
-  insertMany(produtos);
-  console.log(`${produtos.length} produtos de exemplo criados.`);
+  console.log(`Acesso administrativo criado para ${email}.`);
+});
+
+console.log('Nenhum produto de exemplo foi criado. O catálogo real pode ser cadastrado pelo painel.');
+
+function isValidEmail(value) {
+  return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(value);
 }
 
-seedAdmin();
-seedProdutos();
+function fail(message) {
+  console.error(message);
+  process.exit(1);
+}

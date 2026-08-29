@@ -1,108 +1,136 @@
-# Backend — Sara Cosméticos
+# Backend da Sara Cosméticos
 
-API + painel administrativo em **Node.js + Express + SQLite**.
+API, banco SQLite e painel administrativo da loja. O pagamento continua sendo combinado pelo WhatsApp; este backend cuida apenas de acesso administrativo, catálogo, preços, estoque e imagens.
 
-## Estrutura
+## O que está pronto
+
+- SQLite usando o módulo nativo `node:sqlite` do Node.js.
+- Conta administrativa única, sem cadastro público de usuários.
+- Senha armazenada somente como hash BCrypt.
+- Sessão em cookie `HttpOnly`, `SameSite=Strict` e `Secure` em produção.
+- Limite de cinco tentativas de login a cada 15 minutos.
+- Validação de todos os campos no servidor.
+- Upload de JPG, PNG e WebP com limite de 5 MB e validação do conteúdo do arquivo.
+- Produtos podem ser publicados ou ocultados sem apagar o histórico.
+- Registro de auditoria para login, cadastro, edição, status e upload.
+- CORS restrito e cabeçalhos de segurança.
+- Teste automatizado do fluxo completo.
+
+## Executar localmente
+
+```powershell
+cd "C:\Users\gpfa1\OneDrive\Documents\Sara cosmeticos\backend"
+npm install
+npm start
+```
+
+Acessos:
+
+- Painel: `http://localhost:3000/admin/login.html`
+- API pública: `http://localhost:3000/api/produtos`
+- Verificação: `http://localhost:3000/api/health`
+
+O ambiente local já foi inicializado com o email `sara@loja.local`. A senha temporária está em `ADMIN_SENHA` no arquivo `.env`, que é ignorado pelo Git.
+
+## Trocar email ou senha da Sara
+
+1. Abra `.env`.
+2. Altere `ADMIN_EMAIL` e `ADMIN_SENHA`.
+3. A senha deve ter pelo menos 12 caracteres.
+4. Execute:
+
+```powershell
+npm run admin:seed
+```
+
+O comando atualiza a única conta existente. Não existe rota para criar outros administradores.
+
+## Ver o banco de dados
+
+Para conferir tabelas, colunas, administrador e produtos pelo terminal:
+
+```powershell
+npm run db:inspect
+```
+
+Arquivo do banco:
 
 ```text
-backend/
-├── src/
-│   ├── server.js         # ponto de entrada
-│   ├── db.js              # conexão e criação das tabelas
-│   ├── seed.js             # cria o admin e produtos de exemplo (rodar 1x)
-│   ├── middleware/auth.js  # protege as rotas de admin
-│   └── routes/
-│       ├── auth.js         # POST /api/admin/login
-│       └── produtos.js     # rotas públicas + rotas de admin
-└── public/admin/           # painel visual (login + dashboard)
+backend/loja.sqlite
 ```
 
-## Como rodar
+Também é possível abrir esse arquivo no aplicativo DB Browser for SQLite. Prefira abrir em modo somente leitura enquanto o servidor estiver rodando.
 
-```bash
-cd backend
-npm install
-cp .env.example .env
+Tabelas:
+
+- `produtos`: catálogo, preços, estoque, imagem e status.
+- `admin_usuarios`: conta e hash da senha da Sara.
+- `admin_auditoria`: histórico das alterações administrativas.
+
+## Backup
+
+Antes de importar o catálogo ou fazer uma alteração grande:
+
+```powershell
+npm run db:backup
 ```
 
-Abra o `.env` e troque:
-- `JWT_SECRET` por um texto longo e aleatório
-- `ADMIN_EMAIL` e `ADMIN_SENHA` pelo login que a dona da loja vai usar
+O comando cria uma pasta em `backend/backups/` contendo uma cópia consistente de `loja.sqlite` e das imagens de `backend/uploads/`.
 
-Depois:
+## Painel administrativo
 
-```bash
-npm run seed   # cria o usuário admin (só precisa rodar uma vez)
-npm start      # sobe o servidor em http://localhost:3000
+No painel, a Sara pode:
+
+- cadastrar nome, código, marca, categoria e descrição;
+- informar preço normal e promocional;
+- controlar a quantidade em estoque;
+- enviar uma foto do computador ou usar uma URL HTTPS;
+- publicar ou ocultar um produto;
+- buscar e filtrar o catálogo;
+- editar produtos sem perder o histórico.
+
+Uma alteração salva no painel entra imediatamente no SQLite e na API pública. O frontend verá a nova versão na próxima consulta ou recarregamento da página; WebSocket não é necessário para esse volume de loja.
+
+## Rotas principais
+
+Públicas:
+
+- `GET /api/produtos`
+- `GET /api/produtos/:id`
+- `GET /api/health`
+
+Administrativas:
+
+- `POST /api/admin/login`
+- `GET /api/admin/session`
+- `POST /api/admin/logout`
+- `GET /api/produtos/admin/todos`
+- `POST /api/produtos/admin`
+- `PUT /api/produtos/admin/:id`
+- `PATCH /api/produtos/admin/:id/status`
+- `POST /api/produtos/admin/upload`
+
+## Variáveis de ambiente
+
+Use `.env.example` como referência. As principais são:
+
+- `JWT_SECRET`: segredo aleatório com no mínimo 32 caracteres.
+- `ADMIN_EMAIL` e `ADMIN_SENHA`: usados somente pelo script de criação/rotação da conta.
+- `APP_ORIGIN`: endereço público do backend.
+- `FRONTEND_ORIGINS`: endereços autorizados a consultar a API no navegador.
+- `DB_PATH`: caminho opcional para armazenar o SQLite em disco persistente.
+- `UPLOADS_PATH`: caminho opcional para imagens em disco persistente.
+
+## Comandos úteis
+
+```powershell
+npm run check       # valida a sintaxe dos arquivos principais
+npm test            # testa login, cookie, CRUD, upload, API pública e auditoria
+npm run db:inspect  # mostra as tabelas e os dados principais
+npm run db:backup   # copia banco e imagens
+npm run dev         # servidor com reinício automático
 ```
 
-- Loja consome a API em: `http://localhost:3000/api/produtos`
-- Painel admin fica em: `http://localhost:3000/admin/login.html`
+## Publicação
 
-## Tabela `produtos`
-
-| Coluna | Tipo | Descrição |
-|---|---|---|
-| id | INTEGER | gerado automaticamente |
-| codigo | TEXT (único) | código interno do produto |
-| nome | TEXT | nome do produto |
-| marca | TEXT | marca/fabricante |
-| categoria | TEXT | maquiagem, skincare, cabelos, perfumaria... |
-| preco | REAL | preço normal |
-| preco_promocional | REAL | preço com desconto (opcional) |
-| quantidade_estoque | INTEGER | quantidade disponível |
-| descricao | TEXT | descrição opcional |
-| imagem_url | TEXT | link da foto do produto |
-| ativo | INTEGER (0/1) | se aparece na loja |
-| criado_em / atualizado_em | TEXT | datas automáticas |
-
-## Tabela `admin_usuarios`
-
-| Coluna | Tipo | Descrição |
-|---|---|---|
-| id | INTEGER | gerado automaticamente |
-| nome | TEXT | nome de quem loga |
-| email | TEXT (único) | login |
-| senha_hash | TEXT | senha criptografada (nunca fica em texto puro) |
-
-## Rotas da API
-
-**Públicas** (loja/clientes usam, sem login):
-- `GET /api/produtos` — lista produtos ativos (sem quantidade em estoque)
-- `GET /api/produtos/:id` — detalhe de um produto
-
-**Protegidas** (exigem `Authorization: Bearer <token>` do login):
-- `POST /api/admin/login` — login, devolve o token
-- `GET /api/produtos/admin/todos` — lista tudo, incluindo estoque e inativos
-- `POST /api/produtos/admin` — cria produto
-- `PUT /api/produtos/admin/:id` — edita produto
-- `DELETE /api/produtos/admin/:id` — apaga produto
-
-## Como funciona a segurança
-
-1. O painel (`/admin/login.html`) não tem nenhum link a partir do site da loja.
-2. Mesmo que alguém digite a URL direto, a página de dashboard não mostra nada sem um token salvo (`exigirLoginOuRedirecionar()` no admin.js).
-3. **A proteção de verdade está na API**: toda rota `/api/produtos/admin/*` passa pelo middleware `exigirAdmin`, que confere um token JWT válido gerado no login. Sem login, o servidor recusa (401) — não importa a URL usada.
-
-## Conectar ao frontend existente
-
-No `js/app.js` da loja, troque o array fixo `products` por uma chamada à API:
-
-```js
-async function carregarProdutos() {
-  const resposta = await fetch('http://localhost:3000/api/produtos');
-  const produtos = await resposta.json();
-  // usar "produtos" no lugar do array fixo
-}
-```
-
-Quando publicar online, troque `http://localhost:3000` pela URL do backend hospedado.
-
-## Publicando de graça (Render ou Railway)
-
-1. Suba a pasta `backend/` para um repositório no GitHub.
-2. No Render/Railway, crie um "Web Service" apontando pro repositório, com:
-   - Build command: `npm install`
-   - Start command: `npm start`
-   - Variáveis de ambiente: `JWT_SECRET`, `ADMIN_EMAIL`, `ADMIN_SENHA`
-3. **Atenção**: no plano gratuito, o disco é apagado a cada novo deploy — o SQLite (`loja.sqlite`) perderia os dados. Para produção de verdade, o próximo passo é trocar o SQLite por um banco PostgreSQL gratuito do próprio Render/Railway (a estrutura das tabelas é praticamente a mesma, muda só a biblioteca de conexão). Posso te ajudar a fazer essa troca quando for hospedar.
+SQLite é adequado para esta loja enquanto houver apenas um painel administrativo e um volume pequeno de acessos. Na hospedagem, `DB_PATH` e `UPLOADS_PATH` precisam apontar para um disco persistente. Serviços que apagam o disco a cada deploy exigem armazenamento persistente ou migração futura para PostgreSQL e armazenamento de imagens externo.

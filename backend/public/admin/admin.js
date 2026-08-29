@@ -1,41 +1,46 @@
-// Ajuste aqui se o backend estiver em outro endereço (ex: quando publicar online)
 const API_BASE = window.location.origin;
 
-function getToken() {
-  return localStorage.getItem('sara_admin_token');
-}
+async function apiFetch(path, options = {}) {
+  const { redirectOnUnauthorized = true, ...fetchOptions } = options;
+  const headers = new Headers(fetchOptions.headers || {});
 
-function logout() {
-  localStorage.removeItem('sara_admin_token');
-  window.location.href = 'login.html';
-}
-
-// Toda página do dashboard chama isso no início: se não tiver token,
-// manda direto pro login. A proteção final continua sendo o backend,
-// mas isso evita a dona da loja ver a tela vazia sem estar logada.
-function exigirLoginOuRedirecionar() {
-  if (!getToken()) {
-    window.location.href = 'login.html';
+  if (fetchOptions.body && !(fetchOptions.body instanceof FormData) && !headers.has('Content-Type')) {
+    headers.set('Content-Type', 'application/json');
   }
-}
 
-// Wrapper de fetch que já manda o token e trata sessão expirada
-async function apiFetch(caminho, opcoes = {}) {
-  const resposta = await fetch(`${API_BASE}${caminho}`, {
-    ...opcoes,
-    headers: {
-      'Content-Type': 'application/json',
-      Authorization: `Bearer ${getToken()}`,
-      ...(opcoes.headers || {}),
-    },
+  const response = await fetch(`${API_BASE}${path}`, {
+    ...fetchOptions,
+    credentials: 'same-origin',
+    headers,
   });
 
-  if (resposta.status === 401) {
-    logout();
-    throw new Error('Sessão expirada. Faça login novamente.');
+  if (response.status === 401 && redirectOnUnauthorized) {
+    window.location.replace('login.html');
+    throw new Error('Sessão expirada.');
   }
 
-  const dados = await resposta.json().catch(() => ({}));
-  if (!resposta.ok) throw new Error(dados.erro || 'Erro na requisição.');
-  return dados;
+  if (response.status === 204) return null;
+
+  const data = await response.json().catch(() => ({}));
+  if (!response.ok) throw new Error(data.erro || 'Não foi possível concluir a operação.');
+  return data;
+}
+
+async function getAdminSession() {
+  return apiFetch('/api/admin/session', { redirectOnUnauthorized: false });
+}
+
+async function logoutAdmin() {
+  try {
+    await apiFetch('/api/admin/logout', { method: 'POST', redirectOnUnauthorized: false });
+  } finally {
+    window.location.replace('login.html');
+  }
+}
+
+function formatCurrency(value) {
+  return new Intl.NumberFormat('pt-BR', {
+    style: 'currency',
+    currency: 'BRL',
+  }).format(Number(value) || 0);
 }
