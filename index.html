@@ -1,247 +1,259 @@
-﻿<!DOCTYPE html>
+<!DOCTYPE html>
 <html lang="pt-BR">
-<head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<meta name="description" content="Sara Cosméticos: loja online de maquiagem, skincare, perfumes, cuidados com cabelos e corpo.">
-<title>Sara Cosméticos — Beleza que Transforma</title>
-<link rel="preconnect" href="https://fonts.googleapis.com">
-<link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;0,500;0,600;1,300;1,400&family=Jost:wght@300;400;500;600&display=swap" rel="stylesheet">
-<link rel="stylesheet" href="css/styles.css">
-</head>
-<body>
+  <head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta
+      name="description"
+      content="Sara Cosméticos em Maracanaú: perfumes, maquiagem e cuidados pessoais com atendimento direto pelo WhatsApp."
+    >
+    <meta name="theme-color" content="#a85873">
+    <title>Sara Cosméticos | Maracanaú</title>
 
+    <link rel="icon" href="assets/logo-sara-cosmeticos.jpg" type="image/jpeg">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link
+      href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&family=Playfair+Display:ital,wght@0,600;1,600&display=swap"
+      rel="stylesheet"
+    >
+    <link rel="stylesheet" href="css/styles.css">
+    <script src="https://unpkg.com/lucide@0.468.0/dist/umd/lucide.min.js" defer></script>
+    <script src="js/app.js" defer></script>
+  </head>
 
-<div class="cart-overlay" id="cartOverlay" data-cart-close></div>
-<div class="cart-drawer" id="cartDrawer">
-  <div class="cart-header">
-    <span class="cart-title">Seu Carrinho</span>
-    <button class="cart-close" type="button" data-cart-close aria-label="Fechar carrinho">✕</button>
-  </div>
-  <div class="cart-items" id="cartItems">
-    <div class="cart-empty" id="cartEmpty">
-      <div class="cart-empty-icon">🛒</div>
-      Seu carrinho está vazio
-    </div>
-  </div>
-  <div class="cart-footer">
-    <div class="cart-total">
-      <span>Total</span>
-      <span class="cart-total-price" id="cartTotal">R$ 0,00</span>
-    </div>
-    <button class="btn-checkout" type="button" data-checkout>Finalizar Compra</button>
-  </div>
-</div>
+  <body>
+    <a class="skip-link" href="#conteudo">Ir para o conteúdo</a>
 
-
-<div class="mobile-menu" id="mobileMenu">
-  <button class="mobile-close" type="button" data-menu-toggle aria-label="Fechar menu">✕</button>
-  <a href="#inicio" data-mobile-link>Início</a>
-  <a href="#categorias" data-mobile-link>Categorias</a>
-  <a href="#produtos" data-mobile-link>Produtos</a>
-  <a href="#contato" data-mobile-link>Contato</a>
-</div>
-
-
-<div class="announce">
-  Produtos selecionados <span>·</span> Atendimento pelo WhatsApp <span>·</span> Entrega a combinar
-</div>
-
-    
-<nav id="navbar">
-  <a href="#inicio" class="nav-logo" aria-label="Sara Cosméticos - Início">
-    <span>Sara Cosméticos</span>
-  </a>
-  <ul class="nav-links">
-    <li><a href="#inicio">Início</a></li>
-    <li><a href="#categorias">Categorias</a></li>
-    <li><a href="#produtos">Produtos</a></li>
-    <li><a href="#contato">Contato</a></li>
-  </ul>
-  <div class="nav-actions">
-    <button class="nav-icon nav-cart" type="button" data-cart-open title="Carrinho" aria-label="Abrir carrinho">
-      🛒
-      <span class="cart-count is-hidden" id="cartCount">0</span>
-    </button>
-    <button class="hamburger" type="button" data-menu-toggle aria-label="Abrir menu">
-      <span></span><span></span><span></span>
-    </button>
-  </div>
-</nav>
-
-
-
-<section id="inicio" class="hero-section">
-  <div id="hero">
-    <div class="hero-bg"></div>
-    <div class="hero-pattern"></div>
-    <div class="hero-floats">
-      <div class="float-circle"></div>
-      <div class="float-circle"></div>
-      <div class="float-circle"></div>
-    </div>
-    <div class="hero-content">
-
-      <div class="hero-logo-card" data-tilt-card>
-        <img src="assets/logo-sara-cosmeticos.jpg" alt="Logo Sara Cosméticos rumo ao êxito" class="hero-logo-img">
-      </div>
-      <div class="hero-tag">✦ Loja pequena, escolha cuidadosa</div>
-      <h1 class="hero-title">
-        Beleza para<br><em>o dia a dia</em>
-      </h1>
-      <p class="hero-subtitle">
-        Cosméticos selecionados com carinho, atendimento próximo e opções práticas para maquiagem, pele, cabelo e perfume.
+    <div class="topbar">
+      <p>
+        <i data-lucide="map-pin" aria-hidden="true"></i>
+        Maracanaú - CE
       </p>
-      <div class="hero-btns">
-        <a href="#produtos" class="btn-primary">Ver Produtos</a>
-        <a href="#contato" class="btn-ghost">Falar Conosco</a>
+      <a href="https://wa.me/558588540534" target="_blank" rel="noopener noreferrer">
+        Atendimento pelo WhatsApp
+      </a>
+    </div>
+
+    <header class="site-header" id="inicio">
+      <nav class="navbar" aria-label="Navegação principal">
+        <a class="brand" href="#inicio" aria-label="Sara Cosméticos - início">
+          <img src="assets/logo-sara-cosmeticos.jpg" alt="" width="48" height="48">
+          <span>Sara Cosméticos</span>
+        </a>
+
+        <div class="nav-links" id="navLinks">
+          <a href="#produtos" data-nav-link>Produtos</a>
+          <a href="#como-comprar" data-nav-link>Como comprar</a>
+          <a href="#contato" data-nav-link>Contato</a>
+        </div>
+
+        <div class="nav-actions">
+          <button
+            class="icon-button cart-button"
+            type="button"
+            data-cart-open
+            aria-label="Abrir carrinho"
+          >
+            <i data-lucide="shopping-bag" aria-hidden="true"></i>
+            <span class="cart-count is-hidden" id="cartCount">0</span>
+          </button>
+
+          <button
+            class="icon-button menu-button"
+            type="button"
+            data-menu-toggle
+            aria-label="Abrir menu"
+            aria-controls="navLinks"
+            aria-expanded="false"
+          >
+            <i data-lucide="menu" aria-hidden="true"></i>
+          </button>
+        </div>
+      </nav>
+    </header>
+
+    <main id="conteudo">
+      <section class="hero" aria-labelledby="hero-title">
+        <div class="hero-content">
+          <img
+            class="hero-logo"
+            src="assets/logo-sara-cosmeticos.jpg"
+            alt="Sara Cosméticos - Rumo ao êxito"
+            width="190"
+            height="190"
+          >
+          <p class="eyebrow">Consultora de marcas que você ama</p>
+          <h1 id="hero-title">Seu perfume, seu cuidado, <em>seu momento.</em></h1>
+          <p class="hero-text">
+            Perfumes, maquiagem e cuidados pessoais com atendimento próximo em Maracanaú.
+          </p>
+          <div class="hero-actions">
+            <a class="button button-primary" href="#produtos">
+              Ver produtos
+              <i data-lucide="arrow-down" aria-hidden="true"></i>
+            </a>
+            <a
+              class="button button-secondary"
+              href="https://wa.me/558588540534?text=Ol%C3%A1%2C%20Sara!%20Quero%20conhecer%20os%20produtos%20dispon%C3%ADveis."
+              target="_blank"
+              rel="noopener noreferrer"
+            >
+              <i data-lucide="message-circle" aria-hidden="true"></i>
+              Falar com a Sara
+            </a>
+          </div>
+        </div>
+      </section>
+
+      <section class="brands" aria-label="Marcas disponíveis">
+        <p>Marcas que você encontra por aqui</p>
+        <ul>
+          <li>Avon</li>
+          <li>O Boticário</li>
+          <li>Eudora</li>
+          <li>Natura</li>
+        </ul>
+      </section>
+
+      <section class="products-section" id="produtos" aria-labelledby="products-title">
+        <div class="section-heading reveal">
+          <div>
+            <p class="eyebrow eyebrow-dark">Escolhas da loja</p>
+            <h2 id="products-title">Produtos em destaque</h2>
+          </div>
+          <p>Escolha seus favoritos e envie o pedido direto para o WhatsApp.</p>
+        </div>
+
+        <div class="filter-list reveal" role="group" aria-label="Filtrar produtos por categoria">
+          <button class="filter-button is-active" type="button" data-filter="todos">Todos</button>
+          <button class="filter-button" type="button" data-filter="perfumaria">Perfumaria</button>
+          <button class="filter-button" type="button" data-filter="corpo">Corpo</button>
+          <button class="filter-button" type="button" data-filter="maquiagem">Maquiagem</button>
+        </div>
+
+        <div class="products-grid reveal" id="productsGrid" aria-live="polite"></div>
+      </section>
+
+      <section class="how-to-buy" id="como-comprar" aria-labelledby="how-title">
+        <div class="section-heading section-heading-light reveal">
+          <div>
+            <p class="eyebrow">Compra simples</p>
+            <h2 id="how-title">Como pedir</h2>
+          </div>
+        </div>
+
+        <ol class="steps reveal">
+          <li>
+            <span>01</span>
+            <div>
+              <h3>Escolha</h3>
+              <p>Adicione os produtos ao carrinho.</p>
+            </div>
+          </li>
+          <li>
+            <span>02</span>
+            <div>
+              <h3>Envie</h3>
+              <p>Seu pedido vai pronto para o WhatsApp.</p>
+            </div>
+          </li>
+          <li>
+            <span>03</span>
+            <div>
+              <h3>Combine</h3>
+              <p>Confirme pagamento e entrega com a Sara.</p>
+            </div>
+          </li>
+        </ol>
+      </section>
+
+      <section class="contact-section" id="contato" aria-labelledby="contact-title">
+        <div class="contact-content reveal">
+          <p class="eyebrow eyebrow-dark">Atendimento próximo</p>
+          <h2 id="contact-title">Ficou em dúvida sobre qual escolher?</h2>
+          <p>Chame a Sara para consultar disponibilidade, valores e receber uma indicação.</p>
+          <div class="contact-actions">
+            <a
+              class="button button-dark"
+              href="https://wa.me/558588540534"
+              target="_blank"
+              rel="noopener noreferrer"
+            >
+              <i data-lucide="message-circle" aria-hidden="true"></i>
+              WhatsApp
+            </a>
+            <a
+              class="button button-outline"
+              href="https://www.instagram.com/sara.cosmeticos._/"
+              target="_blank"
+              rel="noopener noreferrer"
+            >
+              <i data-lucide="instagram" aria-hidden="true"></i>
+              Instagram
+            </a>
+          </div>
+        </div>
+      </section>
+    </main>
+
+    <footer class="site-footer">
+      <div class="footer-content">
+        <a class="brand brand-footer" href="#inicio">
+          <img src="assets/logo-sara-cosmeticos.jpg" alt="" width="44" height="44">
+          <span>Sara Cosméticos</span>
+        </a>
+        <p>Perfumes e autocuidado em Maracanaú - CE.</p>
+        <div class="footer-links">
+          <a href="https://wa.me/558588540534" target="_blank" rel="noopener noreferrer">WhatsApp</a>
+          <a href="https://www.instagram.com/sara.cosmeticos._/" target="_blank" rel="noopener noreferrer">Instagram</a>
+        </div>
       </div>
-    </div>
-    <div class="hero-side-img">
-      <div class="hero-img-placeholder">
-        <svg class="hero-product-art" viewBox="0 0 500 700" xmlns="http://www.w3.org/2000/svg">
-          <circle cx="250" cy="200" r="120" fill="none" stroke="rgba(255,255,255,0.15)" stroke-width="1"/>
-          <circle cx="250" cy="200" r="80" fill="rgba(255,255,255,0.05)" stroke="rgba(255,255,255,0.1)" stroke-width="1"/>
-          <ellipse cx="250" cy="420" rx="60" ry="120" fill="rgba(201,169,110,0.15)" stroke="rgba(201,169,110,0.3)" stroke-width="1"/>
-          <ellipse cx="180" cy="500" rx="40" ry="80" fill="rgba(200,134,158,0.12)" stroke="rgba(200,134,158,0.25)" stroke-width="1"/>
-          <ellipse cx="320" cy="480" rx="35" ry="70" fill="rgba(200,134,158,0.1)" stroke="rgba(200,134,158,0.2)" stroke-width="1"/>
-          <text x="250" y="210" font-family="Georgia" font-size="18" fill="rgba(255,255,255,0.4)" text-anchor="middle" font-style="italic">sara</text>
-          <text x="250" y="232" font-family="Georgia" font-size="11" fill="rgba(255,255,255,0.25)" text-anchor="middle" letter-spacing="3">COSMÉTICOS</text>
-          <circle cx="400" cy="80" r="40" fill="none" stroke="rgba(201,169,110,0.2)" stroke-width="1"/>
-          <circle cx="80" cy="600" r="60" fill="none" stroke="rgba(200,134,158,0.15)" stroke-width="1"/>
-        </svg>
+      <p class="copyright">© <span id="currentYear"></span> Sara Cosméticos.</p>
+    </footer>
+
+    <div class="cart-overlay" data-cart-close></div>
+    <aside
+      class="cart-drawer"
+      id="cartDrawer"
+      aria-labelledby="cartTitle"
+      aria-hidden="true"
+    >
+      <div class="cart-header">
+        <div>
+          <p class="eyebrow eyebrow-dark">Seu pedido</p>
+          <h2 id="cartTitle">Carrinho</h2>
+        </div>
+        <button class="icon-button" type="button" data-cart-close aria-label="Fechar carrinho">
+          <i data-lucide="x" aria-hidden="true"></i>
+        </button>
       </div>
-    </div>
-    <div class="hero-scroll">
-      <div class="scroll-line"></div>
-      <span>Rolar</span>
-    </div>
-  </div>
-</section>
 
-<section id="categorias">
-  <div class="reveal">
-    <div class="section-label">Categorias</div>
-    <h2 class="section-title">Compre por <em>tipo</em></h2>
-  </div>
-  <div class="categories-grid reveal delay-1">
-    <div class="category-card" data-category="maquiagem" role="button" tabindex="0">
-      <div class="cat-bg cat-bg-1"></div>
-      <div class="cat-overlay"></div>
-      <div class="cat-art">💄</div>
-      <div class="cat-arrow">↗</div>
-      <div class="cat-content">
-        <div class="cat-name">Maquiagem</div>
-        <div class="cat-count">3 produtos</div>
+      <div class="cart-items" id="cartItems"></div>
+
+      <div class="cart-footer">
+        <div class="cart-total">
+          <span>Total estimado</span>
+          <strong id="cartTotal">R$ 0,00</strong>
+        </div>
+        <button class="button button-whatsapp" type="button" data-checkout>
+          <i data-lucide="message-circle" aria-hidden="true"></i>
+          Enviar pedido no WhatsApp
+        </button>
+        <small>Disponibilidade, pagamento e entrega serão confirmados no atendimento.</small>
       </div>
-    </div>
-    <div class="category-card" data-category="skincare" role="button" tabindex="0">
-      <div class="cat-bg cat-bg-2"></div>
-      <div class="cat-overlay"></div>
-      <div class="cat-art">✨</div>
-      <div class="cat-arrow">↗</div>
-      <div class="cat-content">
-        <div class="cat-name">Skincare</div>
-        <div class="cat-count">2 produtos</div>
-      </div>
-    </div>
-    <div class="category-card" data-category="perfumaria" role="button" tabindex="0">
-      <div class="cat-bg cat-bg-3"></div>
-      <div class="cat-overlay"></div>
-      <div class="cat-art">🌸</div>
-      <div class="cat-arrow">↗</div>
-      <div class="cat-content">
-        <div class="cat-name">Perfumaria</div>
-        <div class="cat-count">1 produto</div>
-      </div>
-    </div>
-    <div class="category-card" data-category="cabelos" role="button" tabindex="0">
-      <div class="cat-bg cat-bg-4"></div>
-      <div class="cat-overlay"></div>
-      <div class="cat-art">💇‍♀️</div>
-      <div class="cat-arrow">↗</div>
-      <div class="cat-content">
-        <div class="cat-name">Cabelos</div>
-        <div class="cat-count">2 produtos</div>
-      </div>
-    </div>
-  </div>
-</section>
+    </aside>
 
-<section id="produtos">
-  <div class="products-header reveal">
-    <div>
-      <div class="section-label">Loja</div>
-      <h2 class="section-title">Nossos <em>Produtos</em></h2>
-    </div>
-    <div class="filter-tabs">
-      <button class="filter-tab active" type="button" data-filter="todos">Todos</button>
-      <button class="filter-tab" type="button" data-filter="maquiagem">Maquiagem</button>
-      <button class="filter-tab" type="button" data-filter="skincare">Skincare</button>
-      <button class="filter-tab" type="button" data-filter="cabelos">Cabelos</button>
-      <button class="filter-tab" type="button" data-filter="perfumaria">Perfume</button>
-    </div>
-  </div>
-  <div class="products-grid reveal delay-1" id="productsGrid">
+    <a
+      class="whatsapp-float"
+      href="https://wa.me/558588540534"
+      target="_blank"
+      rel="noopener noreferrer"
+      aria-label="Conversar pelo WhatsApp"
+    >
+      <i data-lucide="message-circle" aria-hidden="true"></i>
+    </a>
 
-  </div>
-</section>
-
-<section id="contato" class="contact-section">
-  <div class="contact-inner reveal">
-    <div>
-      <div class="section-label">Contato</div>
-      <h2 class="section-title">Precisa de ajuda para <em>escolher?</em></h2>
-      <p class="contact-text">Chame a Sara no WhatsApp ou veja as novidades no Instagram. O atendimento é direto e sem complicação.</p>
-    </div>
-    <div class="contact-actions">
-      <a href="https://wa.me/558588540534" target="_blank" rel="noopener noreferrer" class="btn-primary btn-inline">WhatsApp</a>
-      <a href="https://instagram.com/sara.cosmeticos._" target="_blank" rel="noopener noreferrer" class="btn-ghost contact-ghost">Instagram</a>
-    </div>
-  </div>
-</section>
-
-<footer>
-  <div class="footer-grid">
-    <div>
-      <div class="footer-brand-name">Sara Cosméticos</div>
-      <p class="footer-brand-desc">Uma loja pequena de cosméticos, com curadoria simples e atendimento próximo.</p>
-      <div class="footer-socials">
-        <a href="https://instagram.com/sara.cosmeticos._" target="_blank" rel="noopener noreferrer" class="social-btn">📸</a>
-        <a href="https://wa.me/558588540534" target="_blank" rel="noopener noreferrer" class="social-btn">💬</a>
-      </div>
-    </div>
-    <div>
-      <div class="footer-heading">Navegação</div>
-      <ul class="footer-links">
-        <li><a href="#inicio">Início</a></li>
-        <li><a href="#categorias">Categorias</a></li>
-        <li><a href="#produtos">Produtos</a></li>
-        <li><a href="#contato">Contato</a></li>
-      </ul>
-    </div>
-    <div>
-      <div class="footer-heading">Atendimento</div>
-      <ul class="footer-links">
-        <li><a href="https://wa.me/558588540534" target="_blank" rel="noopener noreferrer">WhatsApp</a></li>
-        <li><a href="#">Instagram</a></li>
-        <li><a href="#">Entrega a combinar</a></li>
-      </ul>
-    </div>
-  </div>
-  <div class="footer-bottom">
-    <span class="footer-copy">© <span id="currentYear">2026</span> Sara Cosméticos — Todos os direitos reservados</span>
-    <div class="footer-pay">
-      <span class="pay-icon">Pix</span>
-      <span class="pay-icon">Cartão</span> 
-      <span class="pay-icon">Dinheiro</span> 
-    </div>
-  </div>
-</footer>
-
-
-<div class="toast" id="toast"></div>
-
-<script src="js/app.js" defer></script>
-</body>
+    <div class="toast" id="toast" role="status" aria-live="polite"></div>
+  </body>
 </html>

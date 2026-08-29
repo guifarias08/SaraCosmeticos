@@ -1,56 +1,63 @@
 # Sara Cosméticos
 
-Projeto de vitrine/loja online estática para a marca Sara Cosméticos. A página foi simplificada para uma loja pequena, com foco em categorias, produtos, carrinho e contato direto.
+Front-end responsivo da Sara Cosméticos, loja de perfumes e cuidados pessoais em Maracanaú - CE. O catálogo funciona como uma vitrine e o pedido é enviado diretamente para o WhatsApp da loja.
 
 ## Estrutura
 
 ```text
 Sara cosmeticos/
-├── index.html
+├── assets/
+│   └── logo-sara-cosmeticos.jpg
 ├── css/
 │   └── styles.css
-└── js/
-    └── app.js
+├── js/
+│   └── app.js
+├── index.html
+└── README.md
 ```
-
-## Arquivos principais
-
-- `index.html`: marcação da página, seções, textos e pontos de integração com o JavaScript via atributos `data-*`.
-- `css/styles.css`: identidade visual, layout responsivo, animações, carrinho lateral, cards e estados de interface.
-- `js/app.js`: dados temporários de produtos, renderização dos cards, filtros, carrinho, favoritos, toast e menu mobile.
 
 ## Como executar
 
-Abra o arquivo `index.html` no navegador. O projeto não precisa de build nem servidor local neste momento, porque usa apenas HTML, CSS e JavaScript puro.
+Não existe etapa de build. Para uma visualização rápida, abra `index.html` no navegador.
 
-## Funcionalidades atuais
+No VS Code, também é possível usar a extensão Live Server: clique com o botão direito em `index.html` e escolha **Open with Live Server**.
 
-- Listagem de produtos gerada pelo JavaScript.
-- Filtro por categoria.
-- Carrinho lateral com total calculado.
-- Botões de favoritos com feedback visual.
-- Menu mobile.
-- Toasts de confirmação e aviso.
-- Animações de entrada ao rolar a página.
-- Seção simples de contato para WhatsApp e Instagram.
+## Funcionalidades
 
-## Melhorias aplicadas
+- Layout responsivo para computador, tablet e celular.
+- Filtros por categoria.
+- Carrinho persistido no `localStorage`.
+- Alteração de quantidade e cálculo de total.
+- Pedido formatado e enviado para o WhatsApp `+55 85 8854-0534`.
+- Links oficiais para o WhatsApp e o Instagram da loja.
+- Menu mobile, foco visível, textos alternativos e suporte a movimento reduzido.
 
-- CSS separado em `css/styles.css`.
-- JavaScript separado em `js/app.js` com carregamento `defer`.
-- Remoção de `onclick` e estilos inline da maior parte do HTML.
-- Eventos centralizados no JavaScript usando `data-*`.
-- Renderização de produtos e carrinho com criação de elementos DOM, evitando interpolar HTML desnecessariamente.
-- Melhorias de acessibilidade em botões, menu, cards clicáveis e foco por teclado.
-- Links externos com `rel="noopener noreferrer"`.
-- Meta description adicionada.
-- Ano do rodapé atualizado automaticamente.
-- Página reduzida para um fluxo mais direto: início, categorias, produtos, contato e rodapé.
+## Organização do código
 
-## Próximos passos para backend
+- `index.html`: conteúdo e estrutura sem estilos ou eventos inline.
+- `css/styles.css`: variáveis, componentes, seções, carrinho e responsividade, organizados nessa ordem.
+- `js/app.js`: catálogo temporário, estado do carrinho, renderização e eventos.
 
-- Substituir o array `products` por chamadas a uma API.
-- Persistir carrinho por usuário ou sessão.
-- Criar fluxo real de checkout.
-- Criar painel administrativo para cadastro de produtos, estoque, preços e imagens.
-- Adicionar autenticação se houver área de cliente ou painel interno.
+## Catálogo temporário
+
+Os produtos e preços em `js/app.js` são demonstrativos. Na próxima etapa, o array `products` deverá ser substituído pelos produtos reais vindos do backend.
+
+O formato esperado pelo front é:
+
+```js
+{
+  id: 1,
+  name: 'Nome do produto',
+  brand: 'Marca',
+  category: 'perfumaria',
+  price: 49.9,
+  tone: 'rose',
+}
+```
+
+## Próxima etapa: backend
+
+1. Buscar produtos ativos pela API.
+2. Usar a imagem cadastrada de cada produto no lugar do bloco colorido.
+3. Manter o fechamento do pedido pelo WhatsApp, sem API de pagamento.
+4. Fazer o painel administrativo controlar nome, marca, categoria, preço, estoque e imagem.
