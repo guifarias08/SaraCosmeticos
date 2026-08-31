@@ -20,9 +20,14 @@ API, banco SQLite e painel administrativo da loja. O pagamento continua sendo co
 
 ```powershell
 cd "C:\Users\gpfa1\OneDrive\Documents\Sara cosmeticos\backend"
-npm install
+npm ci
+Copy-Item .env.example .env
+# Edite JWT_SECRET, ADMIN_EMAIL e ADMIN_SENHA no arquivo .env.
+npm run admin:seed
 npm start
 ```
+
+O arquivo `.env` e o banco `loja.sqlite` são locais e não vão para o Git. Na primeira execução em outra máquina, crie o `.env`, configure as credenciais e rode `npm run admin:seed` antes de iniciar o servidor.
 
 Acessos:
 
@@ -30,7 +35,7 @@ Acessos:
 - API pública: `http://localhost:3000/api/produtos`
 - Verificação: `http://localhost:3000/api/health`
 
-O ambiente local já foi inicializado com o email `sara@loja.local`. A senha temporária está em `ADMIN_SENHA` no arquivo `.env`, que é ignorado pelo Git.
+O email e a senha locais são definidos por `ADMIN_EMAIL` e `ADMIN_SENHA` no arquivo `.env`, que é ignorado pelo Git.
 
 ## Trocar email ou senha da Sara
 
@@ -89,7 +94,7 @@ No painel, a Sara pode:
 - buscar e filtrar o catálogo;
 - editar produtos sem perder o histórico.
 
-Uma alteração salva no painel entra imediatamente no SQLite e na API pública. O frontend verá a nova versão na próxima consulta ou recarregamento da página; WebSocket não é necessário para esse volume de loja.
+Uma alteração salva no painel entra imediatamente no SQLite e na API pública. O frontend vê a nova versão ao recarregar a página; WebSocket não é necessário para esse volume de loja.
 
 ## Rotas principais
 
