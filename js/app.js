@@ -1,76 +1,30 @@
 const WHATSAPP_NUMBER = '558588540534';
 const CART_STORAGE_KEY = 'sara-cosmeticos-cart';
+const API_ORIGIN = resolveApiOrigin();
+const CATEGORY_LABELS = {
+  cabelos: 'Cabelos',
+  corpo: 'Corpo',
+  kits: 'Kits',
+  maquiagem: 'Maquiagem',
+  outros: 'Outros',
+  perfumaria: 'Perfumaria',
+  skincare: 'Skincare',
+};
+const CATEGORY_TONES = {
+  cabelos: 'gold',
+  corpo: 'green',
+  kits: 'lilac',
+  maquiagem: 'coral',
+  outros: 'rose',
+  perfumaria: 'rose',
+  skincare: 'blue',
+};
 
-// Catálogo demonstrativo. Na integração com o backend, estes dados virão da API.
-const products = [
-  {
-    id: 1,
-    name: 'Body Splash Floral',
-    brand: 'Avon',
-    category: 'perfumaria',
-    price: 49.9,
-    tone: 'rose',
-  },
-  {
-    id: 2,
-    name: 'Perfume Feminino',
-    brand: 'Eudora',
-    category: 'perfumaria',
-    price: 129.9,
-    tone: 'lilac',
-  },
-  {
-    id: 3,
-    name: 'Colônia Masculina',
-    brand: 'O Boticário',
-    category: 'perfumaria',
-    price: 139.9,
-    tone: 'blue',
-  },
-  {
-    id: 4,
-    name: 'Hidratante Corporal',
-    brand: 'Natura',
-    category: 'corpo',
-    price: 44.9,
-    tone: 'green',
-  },
-  {
-    id: 5,
-    name: 'Kit de Cuidados',
-    brand: 'O Boticário',
-    category: 'corpo',
-    price: 89.9,
-    tone: 'gold',
-  },
-  {
-    id: 6,
-    name: 'Batom Cremoso',
-    brand: 'Avon',
-    category: 'maquiagem',
-    price: 29.9,
-    tone: 'coral',
-  },
-  {
-    id: 7,
-    name: 'Máscara para Cílios',
-    brand: 'Eudora',
-    category: 'maquiagem',
-    price: 39.9,
-    tone: 'blue',
-  },
-  {
-    id: 8,
-    name: 'Sabonete em Barra',
-    brand: 'Natura',
-    category: 'corpo',
-    price: 24.9,
-    tone: 'green',
-  },
-];
+let products = [];
 
 const state = {
   cart: loadCart(),
+  catalogStatus: 'loading',
   currentFilter: 'todos',
   toastTimer: null,
 };
@@ -87,6 +41,7 @@ function initApp() {
   renderCart();
   initRevealAnimations();
   refreshIcons();
+  loadProducts();
 }
 
 function cacheElements() {
@@ -94,6 +49,7 @@ function cacheElements() {
   elements.cartDrawer = document.getElementById('cartDrawer');
   elements.cartItems = document.getElementById('cartItems');
   elements.cartTotal = document.getElementById('cartTotal');
+  elements.filterList = document.querySelector('.filter-list');
   elements.menuButton = document.querySelector('[data-menu-toggle]');
   elements.navLinks = document.getElementById('navLinks');
   elements.productsGrid = document.getElementById('productsGrid');
@@ -115,9 +71,7 @@ function bindEvents() {
 
   document.querySelector('[data-checkout]')?.addEventListener('click', checkoutOnWhatsApp);
 
-  document.querySelectorAll('[data-filter]').forEach((button) => {
-    button.addEventListener('click', () => setFilter(button.dataset.filter));
-  });
+  elements.filterList?.addEventListener('click', handleFilterAction);
 
   elements.productsGrid?.addEventListener('click', handleProductAction);
   elements.cartItems?.addEventListener('click', handleCartAction);
@@ -129,6 +83,16 @@ function bindEvents() {
 function renderProducts() {
   if (!elements.productsGrid) return;
 
+  if (state.catalogStatus === 'loading') {
+    renderCatalogMessage('Carregando o catálogo...');
+    return;
+  }
+
+  if (state.catalogStatus === 'error') {
+    renderCatalogMessage('Não foi possível carregar o catálogo agora. Fale com a Sara pelo WhatsApp.');
+    return;
+  }
+
   const filteredProducts = state.currentFilter === 'todos'
     ? products
     : products.filter((product) => product.category === state.currentFilter);
@@ -136,9 +100,10 @@ function renderProducts() {
   const cards = filteredProducts.map(createProductCard);
 
   if (cards.length === 0) {
-    elements.productsGrid.replaceChildren(
-      createElement('p', 'empty-products', 'Nenhum produto encontrado nesta categoria.'),
-    );
+    const message = products.length === 0
+      ? 'O catálogo está sendo atualizado. Fale com a Sara para consultar os produtos disponíveis.'
+      : 'Nenhum produto encontrado nesta categoria.';
+    renderCatalogMessage(message);
   } else {
     elements.productsGrid.replaceChildren(...cards);
   }
@@ -148,24 +113,55 @@ function renderProducts() {
 
 function createProductCard(product) {
   const article = createElement('article', 'product-card');
-  const visual = createElement('div', `product-visual tone-${product.tone}`, product.brand);
+  const visual = createProductVisual(product, 'product-visual');
   const info = createElement('div', 'product-info');
   const brand = createElement('p', 'product-brand', product.brand);
   const name = createElement('h3', 'product-name', product.name);
   const bottom = createElement('div', 'product-bottom');
+  const prices = createElement('div', 'product-prices');
   const price = createElement('span', 'product-price', formatCurrency(product.price));
   const addButton = createIconButton({
     className: 'add-button',
     icon: 'plus',
-    label: `Adicionar ${product.name} ao carrinho`,
+    label: product.available
+      ? `Adicionar ${product.name} ao carrinho`
+      : `${product.name} indisponível`,
   });
 
+  if (product.originalPrice) {
+    prices.append(createElement('s', 'product-original-price', formatCurrency(product.originalPrice)));
+  }
+  prices.append(price);
   addButton.dataset.productId = String(product.id);
-  bottom.append(price, addButton);
+  addButton.disabled = !product.available;
+  bottom.append(prices, addButton);
   info.append(brand, name, bottom);
   article.append(visual, info);
 
   return article;
+}
+
+function handleFilterAction(event) {
+  const button = event.target.closest('[data-filter]');
+  if (button) setFilter(button.dataset.filter);
+}
+
+function renderFilters() {
+  if (!elements.filterList) return;
+
+  const categories = [...new Set(products.map((product) => product.category))];
+  const filters = ['todos', ...categories].map((category) => {
+    const label = category === 'todos' ? 'Todos' : (CATEGORY_LABELS[category] || category);
+    const button = createElement('button', 'filter-button', label);
+    button.type = 'button';
+    button.dataset.filter = category;
+    button.classList.toggle('is-active', category === state.currentFilter);
+    button.setAttribute('aria-pressed', String(category === state.currentFilter));
+    return button;
+  });
+
+  elements.filterList.replaceChildren(...filters);
+  elements.filterList.hidden = products.length === 0;
 }
 
 function setFilter(filter) {
@@ -189,7 +185,7 @@ function handleProductAction(event) {
 
 function addToCart(productId) {
   const product = findProduct(productId);
-  if (!product) return;
+  if (!product || !product.available) return;
 
   const cartItem = state.cart.find((item) => item.productId === productId);
 
@@ -240,7 +236,7 @@ function createCartItem(item) {
   if (!product) return document.createDocumentFragment();
 
   const row = createElement('article', 'cart-item');
-  const visual = createElement('div', `cart-item-visual tone-${product.tone}`, product.brand);
+  const visual = createProductVisual(product, 'cart-item-visual');
   const details = createElement('div');
   const name = createElement('h3', 'cart-item-name', product.name);
   const price = createElement(
@@ -418,11 +414,98 @@ function loadCart() {
       Number.isInteger(item.productId)
       && Number.isInteger(item.quantity)
       && item.quantity > 0
-      && products.some((product) => product.id === item.productId)
     ));
   } catch {
     return [];
   }
+}
+
+async function loadProducts() {
+  try {
+    const response = await fetch(`${API_ORIGIN}/api/produtos`, {
+      headers: { Accept: 'application/json' },
+    });
+    if (!response.ok) throw new Error(`API respondeu com status ${response.status}`);
+
+    const catalog = await response.json();
+    if (!Array.isArray(catalog)) throw new Error('Formato de catálogo inválido');
+
+    products = catalog.map(normalizeProduct);
+    state.catalogStatus = 'ready';
+    state.cart = state.cart.filter((item) => {
+      const product = findProduct(item.productId);
+      return product?.available;
+    });
+    localStorage.setItem(CART_STORAGE_KEY, JSON.stringify(state.cart));
+    renderFilters();
+    renderProducts();
+    renderCart();
+  } catch (error) {
+    console.error('Falha ao carregar produtos:', error);
+    state.catalogStatus = 'error';
+    products = [];
+    renderFilters();
+    renderProducts();
+    renderCart();
+  }
+}
+
+function normalizeProduct(product) {
+  const regularPrice = Number(product.preco);
+  const promotionalPrice = product.preco_promocional == null
+    ? null
+    : Number(product.preco_promocional);
+  const hasPromotion = Number.isFinite(promotionalPrice) && promotionalPrice < regularPrice;
+
+  return {
+    available: Boolean(product.disponivel),
+    brand: String(product.marca || 'Sara Cosméticos'),
+    category: String(product.categoria || 'outros'),
+    id: Number(product.id),
+    imageUrl: resolveImageUrl(product.imagem_url),
+    name: String(product.nome || 'Produto'),
+    originalPrice: hasPromotion ? regularPrice : null,
+    price: hasPromotion ? promotionalPrice : regularPrice,
+    tone: CATEGORY_TONES[product.categoria] || 'rose',
+  };
+}
+
+function createProductVisual(product, className) {
+  const visual = createElement('div', `${className} tone-${product.tone}`);
+
+  if (!product.imageUrl) {
+    visual.textContent = product.brand;
+    return visual;
+  }
+
+  const image = createElement('img', 'product-image');
+  image.src = product.imageUrl;
+  image.alt = product.name;
+  image.loading = 'lazy';
+  image.addEventListener('error', () => {
+    visual.replaceChildren(document.createTextNode(product.brand));
+  }, { once: true });
+  visual.append(image);
+  return visual;
+}
+
+function renderCatalogMessage(message) {
+  elements.productsGrid?.replaceChildren(createElement('p', 'empty-products', message));
+}
+
+function resolveApiOrigin() {
+  const configuredOrigin = document.querySelector('meta[name="api-origin"]')?.content.trim();
+  if (configuredOrigin) return configuredOrigin.replace(/\/$/, '');
+
+  const isLocalPreview = ['localhost', '127.0.0.1'].includes(window.location.hostname)
+    && window.location.port !== '3000';
+  return isLocalPreview || window.location.protocol === 'file:' ? 'http://localhost:3000' : '';
+}
+
+function resolveImageUrl(imageUrl) {
+  const value = String(imageUrl || '').trim();
+  if (!value || /^https:\/\//i.test(value)) return value;
+  return `${API_ORIGIN}${value.startsWith('/') ? value : `/${value}`}`;
 }
 
 function findProduct(productId) {

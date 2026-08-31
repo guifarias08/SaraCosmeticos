@@ -8,6 +8,7 @@
       content="Sara Cosméticos em Maracanaú: perfumes, maquiagem e cuidados pessoais com atendimento direto pelo WhatsApp."
     >
     <meta name="theme-color" content="#a85873">
+    <meta name="api-origin" content="">
     <title>Sara Cosméticos | Maracanaú</title>
 
     <link rel="icon" href="assets/logo-sara-cosmeticos.jpg" type="image/jpeg">
@@ -17,9 +18,9 @@
       href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&family=Playfair+Display:ital,wght@0,600;1,600&display=swap"
       rel="stylesheet"
     >
-    <link rel="stylesheet" href="css/styles.css">
+    <link rel="stylesheet" href="css/styles.css?v=2">
     <script src="https://unpkg.com/lucide@0.468.0/dist/umd/lucide.min.js" defer></script>
-    <script src="js/app.js" defer></script>
+    <script src="js/app.js?v=2" defer></script>
   </head>
 
   <body>
@@ -125,12 +126,12 @@
           <p>Escolha seus favoritos e envie o pedido direto para o WhatsApp.</p>
         </div>
 
-        <div class="filter-list reveal" role="group" aria-label="Filtrar produtos por categoria">
-          <button class="filter-button is-active" type="button" data-filter="todos">Todos</button>
-          <button class="filter-button" type="button" data-filter="perfumaria">Perfumaria</button>
-          <button class="filter-button" type="button" data-filter="corpo">Corpo</button>
-          <button class="filter-button" type="button" data-filter="maquiagem">Maquiagem</button>
-        </div>
+        <div
+          class="filter-list reveal"
+          role="group"
+          aria-label="Filtrar produtos por categoria"
+          hidden
+        ></div>
 
         <div class="products-grid reveal" id="productsGrid" aria-live="polite"></div>
       </section>
