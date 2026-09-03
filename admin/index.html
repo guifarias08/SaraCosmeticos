@@ -1,0 +1,130 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+  <head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="robots" content="noindex, nofollow">
+    <meta name="theme-color" content="#71384d">
+    <title>Painel | Sara Cosméticos</title>
+    <link rel="icon" href="../assets/logo-sara-cosmeticos.jpg" type="image/jpeg">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&family=Playfair+Display:wght@600&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="admin.css">
+    <script type="module" src="admin.js"></script>
+  </head>
+  <body>
+    <main>
+      <section class="login-shell" id="loginView" aria-labelledby="loginTitle">
+        <form class="login-card" id="loginForm">
+          <img src="../assets/logo-sara-cosmeticos.jpg" alt="" width="76" height="76">
+          <p class="eyebrow">Área restrita</p>
+          <h1 id="loginTitle">Painel da Sara</h1>
+          <p>Entre para atualizar produtos, preços, fotos e estoque.</p>
+
+          <label>
+            E-mail
+            <input id="loginEmail" name="email" type="email" autocomplete="username" maxlength="160" required>
+          </label>
+          <label>
+            Senha
+            <input id="loginPassword" name="password" type="password" autocomplete="current-password" minlength="8" maxlength="200" required>
+          </label>
+          <p class="form-message" id="loginMessage" role="alert" hidden></p>
+          <button class="button button-primary" type="submit">Entrar</button>
+          <a href="../">Voltar para a loja</a>
+        </form>
+      </section>
+
+      <section class="dashboard" id="dashboardView" hidden>
+        <header class="admin-header">
+          <a class="admin-brand" href="../">
+            <img src="../assets/logo-sara-cosmeticos.jpg" alt="" width="44" height="44">
+            <span>Sara Cosméticos</span>
+          </a>
+          <div>
+            <span id="adminEmail"></span>
+            <button class="button button-ghost" id="logoutButton" type="button">Sair</button>
+          </div>
+        </header>
+
+        <div class="admin-layout">
+          <section class="catalog-panel" aria-labelledby="catalogTitle">
+            <div class="panel-heading">
+              <div>
+                <p class="eyebrow">Catálogo</p>
+                <h1 id="catalogTitle">Produtos</h1>
+              </div>
+              <button class="button button-primary" id="newProductButton" type="button">Novo produto</button>
+            </div>
+
+            <div class="stats" aria-label="Resumo do catálogo">
+              <article><span>Total</span><strong id="totalProducts">0</strong></article>
+              <article><span>Publicados</span><strong id="activeProducts">0</strong></article>
+              <article><span>Estoque baixo</span><strong id="lowStockProducts">0</strong></article>
+            </div>
+
+            <label class="search-label" for="adminSearch">
+              Buscar
+              <input id="adminSearch" type="search" placeholder="Nome, código ou marca" maxlength="80">
+            </label>
+
+            <div class="product-list" id="productList" aria-live="polite"></div>
+          </section>
+
+          <section class="editor-panel" id="editorPanel" aria-labelledby="editorTitle">
+            <div class="panel-heading">
+              <div>
+                <p class="eyebrow">Cadastro</p>
+                <h2 id="editorTitle">Novo produto</h2>
+              </div>
+            </div>
+
+            <form id="productForm">
+              <input id="productId" type="hidden">
+              <input id="currentImagePath" type="hidden">
+              <div class="form-grid">
+                <label>Código / SKU<input id="codigo" maxlength="60" required></label>
+                <label>Nome<input id="nome" maxlength="160" required></label>
+                <label>Marca<input id="marca" maxlength="100" value="Sara Cosméticos" required></label>
+                <label>
+                  Categoria
+                  <select id="categoria" required>
+                    <option value="perfumaria">Perfumaria</option>
+                    <option value="maquiagem">Maquiagem</option>
+                    <option value="skincare">Skincare</option>
+                    <option value="corpo">Corpo e banho</option>
+                    <option value="cabelos">Cabelos</option>
+                    <option value="kits">Kits e presentes</option>
+                    <option value="outros">Outros</option>
+                  </select>
+                </label>
+                <label>Preço (R$) — deixe vazio para “consulte”<input id="preco" type="number" min="0" max="999999.99" step="0.01" inputmode="decimal"></label>
+                <label>Preço promocional<input id="precoPromocional" type="number" min="0" max="999999.99" step="0.01" inputmode="decimal"></label>
+                <label>Estoque<input id="estoque" type="number" min="0" max="999999" step="1" value="1" required></label>
+                <label>Ordem de exibição<input id="ordem" type="number" min="0" max="999999" step="1" value="0" required></label>
+              </div>
+              <label>Descrição<textarea id="descricao" rows="4" maxlength="1200"></textarea></label>
+              <label>
+                Foto (JPG, PNG ou WebP; até 5 MB)
+                <input id="imagem" type="file" accept="image/jpeg,image/png,image/webp">
+              </label>
+              <div class="image-preview" id="imagePreview" hidden><img id="imagePreviewElement" alt="Prévia do produto"></div>
+              <div class="check-row">
+                <label><input id="ativo" type="checkbox" checked> Publicado</label>
+                <label><input id="destaque" type="checkbox"> Em destaque</label>
+                <label><input id="precoAPartirDe" type="checkbox"> Mostrar “a partir de”</label>
+              </div>
+              <p class="form-message" id="productMessage" role="alert" hidden></p>
+              <div class="form-actions">
+                <button class="button button-primary" id="saveButton" type="submit">Salvar produto</button>
+                <button class="button button-ghost" id="cancelButton" type="button" hidden>Cancelar edição</button>
+              </div>
+            </form>
+          </section>
+        </div>
+      </section>
+    </main>
+    <div class="toast" id="adminToast" role="status" aria-live="polite"></div>
+  </body>
+</html>

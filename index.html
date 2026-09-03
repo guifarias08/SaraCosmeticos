@@ -8,7 +8,6 @@
       content="Sara Cosméticos em Maracanaú: perfumes, maquiagem e cuidados pessoais com atendimento direto pelo WhatsApp."
     >
     <meta name="theme-color" content="#a85873">
-    <meta name="api-origin" content="">
     <title>Sara Cosméticos | Maracanaú</title>
 
     <link rel="icon" href="assets/logo-sara-cosmeticos.jpg" type="image/jpeg">
@@ -18,9 +17,9 @@
       href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&family=Playfair+Display:ital,wght@0,600;1,600&display=swap"
       rel="stylesheet"
     >
-    <link rel="stylesheet" href="css/styles.css?v=2">
-    <script src="https://unpkg.com/lucide@0.468.0/dist/umd/lucide.min.js" defer></script>
-    <script src="js/app.js?v=2" defer></script>
+    <link rel="stylesheet" href="css/styles.css">
+    <script defer src="js/static-cart.js"></script>
+    <script type="module" src="js/app.js"></script>
   </head>
 
   <body>
@@ -29,7 +28,7 @@
     <div class="topbar">
       <p>
         <i data-lucide="map-pin" aria-hidden="true"></i>
-        Maracanaú - CE
+        Maracanaú · seg. a sáb., 10h às 21h
       </p>
       <a href="https://wa.me/558588540534" target="_blank" rel="noopener noreferrer">
         Atendimento pelo WhatsApp
@@ -57,6 +56,7 @@
             aria-label="Abrir carrinho"
           >
             <i data-lucide="shopping-bag" aria-hidden="true"></i>
+            <span class="cart-label">Carrinho</span>
             <span class="cart-count is-hidden" id="cartCount">0</span>
           </button>
 
@@ -118,7 +118,7 @@
       </section>
 
       <section class="products-section" id="produtos" aria-labelledby="products-title">
-        <div class="section-heading reveal">
+        <div class="section-heading reveal is-visible">
           <div>
             <p class="eyebrow eyebrow-dark">Escolhas da loja</p>
             <h2 id="products-title">Produtos em destaque</h2>
@@ -133,7 +133,125 @@
           hidden
         ></div>
 
-        <div class="products-grid reveal" id="productsGrid" aria-live="polite"></div>
+        <div class="catalog-tools reveal" hidden>
+          <label class="search-field" for="productSearch">
+            <i data-lucide="search" aria-hidden="true"></i>
+            <span class="sr-only">Buscar no catálogo</span>
+            <input
+              id="productSearch"
+              type="search"
+              placeholder="Buscar produto ou marca"
+              autocomplete="off"
+              maxlength="80"
+            >
+          </label>
+          <p id="productCount" aria-live="polite"></p>
+        </div>
+
+        <div class="products-grid reveal is-visible" id="productsGrid" aria-live="polite">
+          <article class="product-card">
+            <div class="product-visual tone-gold">Eudora Siàge</div>
+            <div class="product-info">
+              <p class="product-brand">Eudora Siàge</p>
+              <h3 class="product-name">Produtos disponíveis Eudora Siàge</h3>
+              <div class="product-bottom"><strong class="product-price is-consult">Consulte</strong><button class="fallback-order-button" type="button" data-static-add>Adicionar</button></div>
+            </div>
+          </article>
+          <article class="product-card">
+            <div class="product-visual tone-lilac">Sara Cosméticos</div>
+            <div class="product-info">
+              <p class="product-brand">Sara Cosméticos</p>
+              <h3 class="product-name">Presentes femininos</h3>
+              <div class="product-bottom"><strong class="product-price is-consult">Consulte</strong><button class="fallback-order-button" type="button" data-static-add>Adicionar</button></div>
+            </div>
+          </article>
+          <article class="product-card">
+            <span class="promotion-badge">Oferta</span>
+            <div class="product-visual tone-rose">Natura</div>
+            <div class="product-info">
+              <p class="product-brand">Natura</p>
+              <h3 class="product-name">Luna</h3>
+              <div class="product-bottom"><div class="product-prices"><s class="product-original-price">R$ 190,00</s><strong class="product-price">R$ 130,00</strong></div><button class="fallback-order-button" type="button" data-static-add>Adicionar</button></div>
+            </div>
+          </article>
+          <article class="product-card">
+            <span class="promotion-badge">Oferta</span>
+            <div class="product-visual tone-rose">Natura</div>
+            <div class="product-info">
+              <p class="product-brand">Natura</p>
+              <h3 class="product-name">Kaiak Feminino</h3>
+              <div class="product-bottom"><div class="product-prices"><s class="product-original-price">R$ 190,00</s><strong class="product-price">R$ 140,00</strong></div><button class="fallback-order-button" type="button" data-static-add>Adicionar</button></div>
+            </div>
+          </article>
+          <article class="product-card">
+            <div class="product-visual tone-rose">O Boticário</div>
+            <div class="product-info">
+              <p class="product-brand">O Boticário</p>
+              <h3 class="product-name">Perfumaria feminina O Boticário</h3>
+              <div class="product-bottom"><div class="product-prices"><small class="price-prefix">A partir de</small><strong class="product-price">R$ 125,00</strong></div><button class="fallback-order-button" type="button" data-static-add>Adicionar</button></div>
+            </div>
+          </article>
+          <article class="product-card">
+            <span class="promotion-badge">Oferta</span>
+            <div class="product-visual tone-rose">Avon</div>
+            <div class="product-info">
+              <p class="product-brand">Avon</p>
+              <h3 class="product-name">Colônias Aquavibe Avon de 1 litro</h3>
+              <div class="product-bottom"><div class="product-prices"><s class="product-original-price">R$ 80,00</s><strong class="product-price">R$ 65,00</strong></div><button class="fallback-order-button" type="button" data-static-add>Adicionar</button></div>
+            </div>
+          </article>
+          <article class="product-card">
+            <div class="product-visual tone-rose">Sara Cosméticos</div>
+            <div class="product-info">
+              <p class="product-brand">Sara Cosméticos</p>
+              <h3 class="product-name">Águas de colônia disponíveis</h3>
+              <div class="product-bottom"><div class="product-prices"><small class="price-prefix">A partir de</small><strong class="product-price">R$ 125,00</strong></div><button class="fallback-order-button" type="button" data-static-add>Adicionar</button></div>
+            </div>
+          </article>
+          <article class="product-card">
+            <span class="promotion-badge">Oferta</span>
+            <div class="product-visual tone-rose">Natura</div>
+            <div class="product-info">
+              <p class="product-brand">Natura</p>
+              <h3 class="product-name">Ilía</h3>
+              <div class="product-bottom"><div class="product-prices"><s class="product-original-price">R$ 186,00</s><strong class="product-price">R$ 140,00</strong></div><button class="fallback-order-button" type="button" data-static-add>Adicionar</button></div>
+            </div>
+          </article>
+          <article class="product-card">
+            <div class="product-visual tone-lilac">Sara Cosméticos</div>
+            <div class="product-info">
+              <p class="product-brand">Sara Cosméticos</p>
+              <h3 class="product-name">Presentes masculinos</h3>
+              <div class="product-bottom"><div class="product-prices"><small class="price-prefix">A partir de</small><strong class="product-price">R$ 65,00</strong></div><button class="fallback-order-button" type="button" data-static-add>Adicionar</button></div>
+            </div>
+          </article>
+          <article class="product-card">
+            <div class="product-visual tone-rose">O Boticário</div>
+            <div class="product-info">
+              <p class="product-brand">O Boticário</p>
+              <h3 class="product-name">Egeo disponíveis</h3>
+              <div class="product-bottom"><div class="product-prices"><small class="price-prefix">A partir de</small><strong class="product-price">R$ 90,00</strong></div><button class="fallback-order-button" type="button" data-static-add>Adicionar</button></div>
+            </div>
+          </article>
+          <article class="product-card">
+            <span class="promotion-badge">Oferta</span>
+            <div class="product-visual tone-rose">Natura</div>
+            <div class="product-info">
+              <p class="product-brand">Natura</p>
+              <h3 class="product-name">Natura Humor</h3>
+              <div class="product-bottom"><div class="product-prices"><s class="product-original-price">R$ 155,00</s><strong class="product-price">R$ 100,00</strong></div><button class="fallback-order-button" type="button" data-static-add>Adicionar</button></div>
+            </div>
+          </article>
+          <article class="product-card">
+            <span class="promotion-badge">Oferta</span>
+            <div class="product-visual tone-rose">Natura</div>
+            <div class="product-info">
+              <p class="product-brand">Natura</p>
+              <h3 class="product-name">Essencial</h3>
+              <div class="product-bottom"><div class="product-prices"><s class="product-original-price">R$ 280,00</s><strong class="product-price">R$ 140,00</strong></div><button class="fallback-order-button" type="button" data-static-add>Adicionar</button></div>
+            </div>
+          </article>
+        </div>
       </section>
 
       <section class="how-to-buy" id="como-comprar" aria-labelledby="how-title">
@@ -173,7 +291,7 @@
         <div class="contact-content reveal">
           <p class="eyebrow eyebrow-dark">Atendimento próximo</p>
           <h2 id="contact-title">Ficou em dúvida sobre qual escolher?</h2>
-          <p>Chame a Sara para consultar disponibilidade, valores e receber uma indicação.</p>
+          <p>Chame a Sara para consultar disponibilidade e receber uma indicação. Pagamento por Pix, débito ou crédito.</p>
           <div class="contact-actions">
             <a
               class="button button-dark"
@@ -186,11 +304,11 @@
             </a>
             <a
               class="button button-outline"
-              href="https://www.instagram.com/sara.cosmeticos._/"
+              href="https://www.instagram.com/sara.cosmeticos_/"
               target="_blank"
               rel="noopener noreferrer"
             >
-              <i data-lucide="instagram" aria-hidden="true"></i>
+              <i data-lucide="camera" aria-hidden="true"></i>
               Instagram
             </a>
           </div>
@@ -207,7 +325,7 @@
         <p>Perfumes e autocuidado em Maracanaú - CE.</p>
         <div class="footer-links">
           <a href="https://wa.me/558588540534" target="_blank" rel="noopener noreferrer">WhatsApp</a>
-          <a href="https://www.instagram.com/sara.cosmeticos._/" target="_blank" rel="noopener noreferrer">Instagram</a>
+          <a href="https://www.instagram.com/sara.cosmeticos_/" target="_blank" rel="noopener noreferrer">Instagram</a>
         </div>
       </div>
       <p class="copyright">© <span id="currentYear"></span> Sara Cosméticos.</p>
@@ -234,7 +352,7 @@
 
       <div class="cart-footer">
         <div class="cart-total">
-          <span>Total estimado</span>
+          <span id="cartTotalLabel">Total estimado</span>
           <strong id="cartTotal">R$ 0,00</strong>
         </div>
         <button class="button button-whatsapp" type="button" data-checkout>
@@ -256,5 +374,9 @@
     </a>
 
     <div class="toast" id="toast" role="status" aria-live="polite"></div>
+
+    <noscript>
+      <p class="noscript-message">Ative o JavaScript para visualizar o catálogo e montar seu pedido.</p>
+    </noscript>
   </body>
 </html>

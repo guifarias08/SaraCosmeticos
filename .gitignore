@@ -1,2 +1,11 @@
-# O backend vive na branch backend e pode deixar dados locais ao alternar branches.
-backend/
+node_modules/
+dist/
+.env
+.env.local
+.env.*.local
+.vercel/
+npm-debug.log*
+
+# Arquivos locais do Supabase CLI.
+supabase/.branches/
+supabase/.temp/

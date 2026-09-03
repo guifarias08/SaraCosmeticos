@@ -1,35 +1,29 @@
+import {
+  ArrowDown, Camera, createIcons, MapPin, Menu, MessageCircle,
+  Minus, Plus, Search, ShoppingBag, Trash2, X,
+} from 'lucide';
+import { CATALOG_FALLBACK } from './catalog-data.js';
+import { getPricing, normalizeSearch } from './catalog-utils.js';
+import { getProductImageUrl, isSupabaseConfigured, supabase } from './supabase.js';
+
+window.__SARA_APP_READY = true;
+
 const WHATSAPP_NUMBER = '558588540534';
-const CART_STORAGE_KEY = 'sara-cosmeticos-cart';
-const API_ORIGIN = resolveApiOrigin();
+const CART_STORAGE_KEY = 'sara-cosmeticos-cart-v2';
 const CATEGORY_LABELS = {
-  cabelos: 'Cabelos',
-  corpo: 'Corpo',
-  kits: 'Kits',
-  maquiagem: 'Maquiagem',
-  outros: 'Outros',
-  perfumaria: 'Perfumaria',
-  skincare: 'Skincare',
+  cabelos: 'Cabelos', corpo: 'Corpo e banho', kits: 'Kits e presentes',
+  maquiagem: 'Maquiagem', outros: 'Outros', perfumaria: 'Perfumaria', skincare: 'Skincare',
 };
 const CATEGORY_TONES = {
-  cabelos: 'gold',
-  corpo: 'green',
-  kits: 'lilac',
-  maquiagem: 'coral',
-  outros: 'rose',
-  perfumaria: 'rose',
-  skincare: 'blue',
+  cabelos: 'gold', corpo: 'green', kits: 'lilac', maquiagem: 'coral',
+  outros: 'rose', perfumaria: 'rose', skincare: 'blue',
 };
 
 let products = [];
-
-const state = {
-  cart: loadCart(),
-  catalogStatus: 'loading',
-  currentFilter: 'todos',
-  toastTimer: null,
-};
-
 const elements = {};
+const state = {
+  cart: loadCart(), catalogStatus: 'loading', currentFilter: 'todos', search: '', toastTimer: null,
+};
 
 document.addEventListener('DOMContentLoaded', initApp);
 
@@ -39,7 +33,6 @@ function initApp() {
   bindEvents();
   renderProducts();
   renderCart();
-  initRevealAnimations();
   refreshIcons();
   loadProducts();
 }
@@ -48,96 +41,97 @@ function cacheElements() {
   elements.cartCount = document.getElementById('cartCount');
   elements.cartDrawer = document.getElementById('cartDrawer');
   elements.cartItems = document.getElementById('cartItems');
+  elements.cartTotalLabel = document.getElementById('cartTotalLabel');
   elements.cartTotal = document.getElementById('cartTotal');
+  elements.catalogTools = document.querySelector('.catalog-tools');
   elements.filterList = document.querySelector('.filter-list');
   elements.menuButton = document.querySelector('[data-menu-toggle]');
   elements.navLinks = document.getElementById('navLinks');
+  elements.productCount = document.getElementById('productCount');
+  elements.productSearch = document.getElementById('productSearch');
   elements.productsGrid = document.getElementById('productsGrid');
   elements.toast = document.getElementById('toast');
 }
 
 function bindEvents() {
   elements.menuButton?.addEventListener('click', toggleMenu);
-
-  document.querySelectorAll('[data-nav-link]').forEach((link) => {
-    link.addEventListener('click', closeMenu);
-  });
-
+  document.querySelectorAll('[data-nav-link]').forEach((link) => link.addEventListener('click', closeMenu));
   document.querySelector('[data-cart-open]')?.addEventListener('click', openCart);
-
-  document.querySelectorAll('[data-cart-close]').forEach((element) => {
-    element.addEventListener('click', closeCart);
-  });
-
+  document.querySelectorAll('[data-cart-close]').forEach((element) => element.addEventListener('click', closeCart));
   document.querySelector('[data-checkout]')?.addEventListener('click', checkoutOnWhatsApp);
-
   elements.filterList?.addEventListener('click', handleFilterAction);
-
   elements.productsGrid?.addEventListener('click', handleProductAction);
   elements.cartItems?.addEventListener('click', handleCartAction);
-
+  elements.productSearch?.addEventListener('input', (event) => {
+    state.search = normalizeSearch(event.target.value);
+    renderProducts();
+  });
   document.addEventListener('keydown', handleKeyboard);
   window.addEventListener('resize', handleResize);
 }
 
 function renderProducts() {
   if (!elements.productsGrid) return;
-
-  if (state.catalogStatus === 'loading') {
-    renderCatalogMessage('Carregando o catálogo...');
-    return;
+  if (state.catalogStatus === 'loading') return renderCatalogMessage('Carregando o catálogo...');
+  if (state.catalogStatus === 'configuration-error') {
+    return renderCatalogMessage('O catálogo está sendo configurado. Fale com a Sara pelo WhatsApp.');
   }
-
   if (state.catalogStatus === 'error') {
-    renderCatalogMessage('Não foi possível carregar o catálogo agora. Fale com a Sara pelo WhatsApp.');
-    return;
+    return renderCatalogMessage('Não foi possível carregar o catálogo agora. Tente novamente em instantes ou fale com a Sara.');
   }
 
-  const filteredProducts = state.currentFilter === 'todos'
-    ? products
-    : products.filter((product) => product.category === state.currentFilter);
-
-  const cards = filteredProducts.map(createProductCard);
-
-  if (cards.length === 0) {
+  const filteredProducts = products.filter((product) => {
+    const matchesCategory = state.currentFilter === 'todos' || product.category === state.currentFilter;
+    const searchable = normalizeSearch(`${product.name} ${product.brand} ${product.code}`);
+    return matchesCategory && (!state.search || searchable.includes(state.search));
+  });
+  if (elements.productCount) {
+    elements.productCount.textContent = `${filteredProducts.length} ${filteredProducts.length === 1 ? 'produto' : 'produtos'}`;
+  }
+  if (filteredProducts.length === 0) {
     const message = products.length === 0
       ? 'O catálogo está sendo atualizado. Fale com a Sara para consultar os produtos disponíveis.'
-      : 'Nenhum produto encontrado nesta categoria.';
+      : 'Nenhum produto encontrado com esses filtros.';
     renderCatalogMessage(message);
   } else {
-    elements.productsGrid.replaceChildren(...cards);
+    elements.productsGrid.replaceChildren(...filteredProducts.map(createProductCard));
   }
-
   refreshIcons();
 }
 
 function createProductCard(product) {
   const article = createElement('article', 'product-card');
-  const visual = createProductVisual(product, 'product-visual');
   const info = createElement('div', 'product-info');
-  const brand = createElement('p', 'product-brand', product.brand);
-  const name = createElement('h3', 'product-name', product.name);
   const bottom = createElement('div', 'product-bottom');
   const prices = createElement('div', 'product-prices');
-  const price = createElement('span', 'product-price', formatCurrency(product.price));
-  const addButton = createIconButton({
-    className: 'add-button',
-    icon: 'plus',
-    label: product.available
-      ? `Adicionar ${product.name} ao carrinho`
-      : `${product.name} indisponível`,
-  });
-
+  const addButton = createElement('button', 'add-button');
+  const addIcon = document.createElement('i');
+  addButton.type = 'button';
+  addButton.setAttribute('aria-label', product.available ? `Adicionar ${product.name} ao carrinho` : `${product.name} indisponível`);
+  addIcon.dataset.lucide = 'plus';
+  addIcon.setAttribute('aria-hidden', 'true');
+  addButton.append(addIcon, createElement('span', '', 'Adicionar'));
   if (product.originalPrice) {
     prices.append(createElement('s', 'product-original-price', formatCurrency(product.originalPrice)));
+    article.append(createElement('span', 'promotion-badge', 'Oferta'));
   }
-  prices.append(price);
+  if (!product.available) article.append(createElement('span', 'availability-badge', 'Indisponível'));
+  if (product.priceFrom && product.price !== null) prices.append(createElement('span', 'price-prefix', 'A partir de'));
+  prices.append(createElement(
+    'span',
+    `product-price${product.price === null ? ' is-consult' : ''}`,
+    product.price === null ? 'Consulte' : formatCurrency(product.price),
+  ));
   addButton.dataset.productId = String(product.id);
   addButton.disabled = !product.available;
   bottom.append(prices, addButton);
-  info.append(brand, name, bottom);
-  article.append(visual, info);
-
+  info.append(
+    createElement('p', 'product-brand', product.brand),
+    createElement('h3', 'product-name', product.name),
+  );
+  if (product.description) info.append(createElement('p', 'product-description', product.description));
+  info.append(bottom);
+  article.append(createProductVisual(product, 'product-visual'), info);
   return article;
 }
 
@@ -148,73 +142,67 @@ function handleFilterAction(event) {
 
 function renderFilters() {
   if (!elements.filterList) return;
-
   const categories = [...new Set(products.map((product) => product.category))];
   const filters = ['todos', ...categories].map((category) => {
-    const label = category === 'todos' ? 'Todos' : (CATEGORY_LABELS[category] || category);
-    const button = createElement('button', 'filter-button', label);
+    const button = createElement('button', 'filter-button', category === 'todos' ? 'Todos' : (CATEGORY_LABELS[category] || category));
     button.type = 'button';
     button.dataset.filter = category;
     button.classList.toggle('is-active', category === state.currentFilter);
     button.setAttribute('aria-pressed', String(category === state.currentFilter));
     return button;
   });
-
   elements.filterList.replaceChildren(...filters);
   elements.filterList.hidden = products.length === 0;
+  elements.catalogTools.hidden = products.length === 0;
 }
 
 function setFilter(filter) {
   state.currentFilter = filter;
-
   document.querySelectorAll('[data-filter]').forEach((button) => {
     const isActive = button.dataset.filter === filter;
     button.classList.toggle('is-active', isActive);
     button.setAttribute('aria-pressed', String(isActive));
   });
-
   renderProducts();
 }
 
 function handleProductAction(event) {
   const button = event.target.closest('[data-product-id]');
-  if (!button) return;
-
-  addToCart(Number(button.dataset.productId));
+  if (button) addToCart(Number(button.dataset.productId));
 }
 
 function addToCart(productId) {
   const product = findProduct(productId);
-  if (!product || !product.available) return;
-
+  if (!product?.available) return;
   const cartItem = state.cart.find((item) => item.productId === productId);
-
   if (cartItem) {
+    if (cartItem.quantity >= product.stock) {
+      showToast('Você já adicionou toda a quantidade disponível.');
+      return;
+    }
     cartItem.quantity += 1;
   } else {
     state.cart.push({ productId, quantity: 1 });
   }
-
   persistAndRenderCart();
   showToast(`${product.name} foi adicionado ao carrinho.`);
+  openCart();
 }
 
 function renderCart() {
   if (!elements.cartItems || !elements.cartTotal || !elements.cartCount) return;
-
   const itemCount = state.cart.reduce((total, item) => total + item.quantity, 0);
-  const total = calculateCartTotal();
-
   elements.cartCount.textContent = String(itemCount);
   elements.cartCount.classList.toggle('is-hidden', itemCount === 0);
-  elements.cartTotal.textContent = formatCurrency(total);
-
-  if (state.cart.length === 0) {
-    elements.cartItems.replaceChildren(createEmptyCart());
-  } else {
-    elements.cartItems.replaceChildren(...state.cart.map(createCartItem));
+  const hasUnpricedItems = cartHasUnpricedItems();
+  const hasPricedItems = cartHasPricedItems();
+  elements.cartTotal.textContent = hasUnpricedItems
+    ? (hasPricedItems ? `${formatCurrency(calculateCartTotal())} + consulta` : 'A confirmar')
+    : formatCurrency(calculateCartTotal());
+  if (elements.cartTotalLabel) {
+    elements.cartTotalLabel.textContent = hasUnpricedItems && hasPricedItems ? 'Subtotal conhecido' : 'Total estimado';
   }
-
+  elements.cartItems.replaceChildren(...(state.cart.length ? state.cart.map(createCartItem) : [createEmptyCart()]));
   refreshIcons();
 }
 
@@ -222,45 +210,37 @@ function createEmptyCart() {
   const empty = createElement('div', 'cart-empty');
   const content = createElement('div');
   const icon = document.createElement('i');
-
   icon.dataset.lucide = 'shopping-bag';
   icon.setAttribute('aria-hidden', 'true');
   content.append(icon, createElement('p', '', 'Seu carrinho está vazio.'));
   empty.append(content);
-
   return empty;
 }
 
 function createCartItem(item) {
   const product = findProduct(item.productId);
   if (!product) return document.createDocumentFragment();
-
   const row = createElement('article', 'cart-item');
-  const visual = createProductVisual(product, 'cart-item-visual');
   const details = createElement('div');
-  const name = createElement('h3', 'cart-item-name', product.name);
-  const price = createElement(
-    'p',
-    'cart-item-price',
-    formatCurrency(product.price * item.quantity),
-  );
   const quantityControl = createElement('div', 'quantity-control');
-  const decreaseButton = createQuantityButton('minus', 'Diminuir quantidade', 'decrease', product.id);
-  const increaseButton = createQuantityButton('plus', 'Aumentar quantidade', 'increase', product.id);
-  const quantity = createElement('span', '', String(item.quantity));
-  const removeButton = createIconButton({
-    className: 'remove-button',
-    icon: 'trash-2',
-    label: `Remover ${product.name}`,
-  });
-
+  const removeButton = createIconButton({ className: 'remove-button', icon: 'trash-2', label: `Remover ${product.name}` });
   removeButton.dataset.cartAction = 'remove';
   removeButton.dataset.productId = String(product.id);
-
-  quantityControl.append(decreaseButton, quantity, increaseButton);
-  details.append(name, price, quantityControl);
-  row.append(visual, details, removeButton);
-
+  quantityControl.append(
+    createQuantityButton('minus', 'Diminuir quantidade', 'decrease', product.id),
+    createElement('span', '', String(item.quantity)),
+    createQuantityButton('plus', 'Aumentar quantidade', 'increase', product.id),
+  );
+  details.append(
+    createElement('h3', 'cart-item-name', product.name),
+    createElement(
+      'p',
+      'cart-item-price',
+      product.price === null ? 'Valor a confirmar' : formatCurrency(product.price * item.quantity),
+    ),
+    quantityControl,
+  );
+  row.append(createProductVisual(product, 'cart-item-visual'), details, removeButton);
   return row;
 }
 
@@ -274,19 +254,15 @@ function createQuantityButton(icon, label, action, productId) {
 function handleCartAction(event) {
   const button = event.target.closest('[data-cart-action]');
   if (!button) return;
-
   const productId = Number(button.dataset.productId);
-  const action = button.dataset.cartAction;
+  const product = findProduct(productId);
   const cartItem = state.cart.find((item) => item.productId === productId);
-  if (!cartItem) return;
-
-  if (action === 'increase') cartItem.quantity += 1;
-  if (action === 'decrease') cartItem.quantity -= 1;
-
-  if (action === 'remove' || cartItem.quantity <= 0) {
+  if (!cartItem || !product) return;
+  if (button.dataset.cartAction === 'increase') cartItem.quantity = Math.min(cartItem.quantity + 1, product.stock);
+  if (button.dataset.cartAction === 'decrease') cartItem.quantity -= 1;
+  if (button.dataset.cartAction === 'remove' || cartItem.quantity <= 0) {
     state.cart = state.cart.filter((item) => item.productId !== productId);
   }
-
   persistAndRenderCart();
 }
 
@@ -298,34 +274,38 @@ function persistAndRenderCart() {
 function calculateCartTotal() {
   return state.cart.reduce((total, item) => {
     const product = findProduct(item.productId);
-    return total + (product ? product.price * item.quantity : 0);
+    return total + (product && product.price !== null ? product.price * item.quantity : 0);
   }, 0);
 }
 
-function checkoutOnWhatsApp() {
-  if (state.cart.length === 0) {
-    showToast('Adicione pelo menos um produto antes de enviar o pedido.');
-    return;
-  }
+function cartHasUnpricedItems() {
+  return state.cart.some((item) => findProduct(item.productId)?.price === null);
+}
 
+function cartHasPricedItems() {
+  return state.cart.some((item) => findProduct(item.productId)?.price !== null);
+}
+
+function checkoutOnWhatsApp() {
+  if (state.cart.length === 0) return showToast('Adicione pelo menos um produto antes de enviar o pedido.');
   const productLines = state.cart.map((item) => {
     const product = findProduct(item.productId);
-    const subtotal = product.price * item.quantity;
-    return `- ${item.quantity}x ${product.name} (${product.brand}) - ${formatCurrency(subtotal)}`;
+    const itemPrice = product.price === null
+      ? 'valor a confirmar'
+      : `${product.priceFrom ? 'a partir de ' : ''}${formatCurrency(product.price * item.quantity)}`;
+    return `- ${item.quantity}x ${product.name} (${product.brand}) - ${itemPrice}`;
   });
-
+  const totalLine = cartHasUnpricedItems()
+    ? (cartHasPricedItems()
+      ? `Subtotal dos itens com preço: ${formatCurrency(calculateCartTotal())} (há valores a confirmar)`
+      : 'Total: a confirmar')
+    : `Total estimado: ${formatCurrency(calculateCartTotal())}`;
   const message = [
-    'Olá, Sara! Gostaria de fazer este pedido:',
-    '',
-    ...productLines,
-    '',
-    `Total estimado: ${formatCurrency(calculateCartTotal())}`,
-    '',
+    'Olá, Sara! Gostaria de fazer este pedido:', '', ...productLines, '',
+    totalLine, '',
     'Pode confirmar a disponibilidade e combinar a entrega comigo?',
   ].join('\n');
-
-  const whatsappUrl = `https://wa.me/${WHATSAPP_NUMBER}?text=${encodeURIComponent(message)}`;
-  window.open(whatsappUrl, '_blank', 'noopener,noreferrer');
+  window.open(`https://wa.me/${WHATSAPP_NUMBER}?text=${encodeURIComponent(message)}`, '_blank', 'noopener,noreferrer');
 }
 
 function openCart() {
@@ -344,19 +324,11 @@ function closeCart() {
   document.body.classList.remove('is-locked');
 }
 
-function toggleMenu() {
-  const shouldOpen = !elements.navLinks?.classList.contains('is-open');
-  setMenuOpen(shouldOpen);
-}
-
-function closeMenu() {
-  setMenuOpen(false);
-}
-
+function toggleMenu() { setMenuOpen(!elements.navLinks?.classList.contains('is-open')); }
+function closeMenu() { setMenuOpen(false); }
 function setMenuOpen(isOpen) {
   elements.navLinks?.classList.toggle('is-open', isOpen);
   elements.menuButton?.setAttribute('aria-expanded', String(isOpen));
-
   if (elements.menuButton) {
     elements.menuButton.innerHTML = `<i data-lucide="${isOpen ? 'x' : 'menu'}" aria-hidden="true"></i>`;
     elements.menuButton.setAttribute('aria-label', isOpen ? 'Fechar menu' : 'Abrir menu');
@@ -365,185 +337,108 @@ function setMenuOpen(isOpen) {
 }
 
 function handleKeyboard(event) {
-  if (event.key !== 'Escape') return;
-  closeMenu();
-  closeCart();
+  if (event.key === 'Escape') { closeMenu(); closeCart(); }
 }
-
-function handleResize() {
-  if (window.innerWidth > 760) closeMenu();
-}
-
-function initRevealAnimations() {
-  const revealElements = document.querySelectorAll('.reveal');
-
-  if (!('IntersectionObserver' in window)) {
-    revealElements.forEach((element) => element.classList.add('is-visible'));
-    return;
-  }
-
-  const observer = new IntersectionObserver((entries) => {
-    entries.forEach((entry) => {
-      if (!entry.isIntersecting) return;
-      entry.target.classList.add('is-visible');
-      observer.unobserve(entry.target);
-    });
-  }, { threshold: 0.12 });
-
-  revealElements.forEach((element) => observer.observe(element));
-}
+function handleResize() { if (window.innerWidth > 760) closeMenu(); }
 
 function showToast(message) {
   if (!elements.toast) return;
-
   window.clearTimeout(state.toastTimer);
   elements.toast.textContent = message;
   elements.toast.classList.add('is-visible');
-
-  state.toastTimer = window.setTimeout(() => {
-    elements.toast.classList.remove('is-visible');
-  }, 2400);
+  state.toastTimer = window.setTimeout(() => elements.toast.classList.remove('is-visible'), 2400);
 }
 
 function loadCart() {
   try {
     const savedCart = JSON.parse(localStorage.getItem(CART_STORAGE_KEY) || '[]');
     if (!Array.isArray(savedCart)) return [];
-
-    return savedCart.filter((item) => (
-      Number.isInteger(item.productId)
-      && Number.isInteger(item.quantity)
-      && item.quantity > 0
-    ));
-  } catch {
-    return [];
-  }
+    return savedCart.filter((item) => Number.isInteger(item.productId) && Number.isInteger(item.quantity) && item.quantity > 0);
+  } catch { return []; }
 }
 
 async function loadProducts() {
-  try {
-    const response = await fetch(`${API_ORIGIN}/api/produtos`, {
-      headers: { Accept: 'application/json' },
-    });
-    if (!response.ok) throw new Error(`API respondeu com status ${response.status}`);
+  let catalogData = CATALOG_FALLBACK;
 
-    const catalog = await response.json();
-    if (!Array.isArray(catalog)) throw new Error('Formato de catálogo inválido');
-
-    products = catalog.map(normalizeProduct);
-    state.catalogStatus = 'ready';
-    state.cart = state.cart.filter((item) => {
-      const product = findProduct(item.productId);
-      return product?.available;
-    });
-    localStorage.setItem(CART_STORAGE_KEY, JSON.stringify(state.cart));
-    renderFilters();
-    renderProducts();
-    renderCart();
-  } catch (error) {
-    console.error('Falha ao carregar produtos:', error);
-    state.catalogStatus = 'error';
-    products = [];
-    renderFilters();
-    renderProducts();
-    renderCart();
+  if (!isSupabaseConfigured || !supabase) {
+    catalogData = CATALOG_FALLBACK;
+  } else {
+    const { data, error } = await supabase
+      .from('produtos')
+      .select('id,codigo,nome,marca,categoria,preco,preco_promocional,preco_a_partir_de,quantidade_estoque,descricao,imagem_path,destaque,ordem')
+      .eq('ativo', true)
+      .order('destaque', { ascending: false })
+      .order('ordem', { ascending: true })
+      .order('nome', { ascending: true });
+    if (error) console.error('Falha ao carregar o Supabase; usando o catálogo de segurança:', error.message);
+    else catalogData = data;
   }
+
+  products = catalogData.map(normalizeProduct);
+  state.catalogStatus = 'ready';
+  state.cart = state.cart.flatMap((item) => {
+    const product = findProduct(item.productId);
+    return product?.available ? [{ ...item, quantity: Math.min(item.quantity, product.stock) }] : [];
+  });
+  localStorage.setItem(CART_STORAGE_KEY, JSON.stringify(state.cart));
+  renderFilters();
+  renderProducts();
+  renderCart();
 }
 
 function normalizeProduct(product) {
-  const regularPrice = Number(product.preco);
-  const promotionalPrice = product.preco_promocional == null
-    ? null
-    : Number(product.preco_promocional);
-  const hasPromotion = Number.isFinite(promotionalPrice) && promotionalPrice < regularPrice;
-
+  const pricing = getPricing(product.preco, product.preco_promocional);
   return {
-    available: Boolean(product.disponivel),
-    brand: String(product.marca || 'Sara Cosméticos'),
-    category: String(product.categoria || 'outros'),
-    id: Number(product.id),
-    imageUrl: resolveImageUrl(product.imagem_url),
-    name: String(product.nome || 'Produto'),
-    originalPrice: hasPromotion ? regularPrice : null,
-    price: hasPromotion ? promotionalPrice : regularPrice,
-    tone: CATEGORY_TONES[product.categoria] || 'rose',
+    available: Number(product.quantidade_estoque) > 0,
+    brand: String(product.marca || 'Sara Cosméticos'), category: String(product.categoria || 'outros'),
+    code: String(product.codigo || ''), description: String(product.descricao || ''), id: Number(product.id),
+    imageUrl: getProductImageUrl(product.imagem_path), name: String(product.nome || 'Produto'),
+    ...pricing,
+    priceFrom: Boolean(product.preco_a_partir_de),
+    stock: Math.max(0, Number(product.quantidade_estoque) || 0), tone: CATEGORY_TONES[product.categoria] || 'rose',
   };
 }
 
 function createProductVisual(product, className) {
   const visual = createElement('div', `${className} tone-${product.tone}`);
-
-  if (!product.imageUrl) {
-    visual.textContent = product.brand;
-    return visual;
-  }
-
+  if (!product.imageUrl) { visual.textContent = product.brand; return visual; }
   const image = createElement('img', 'product-image');
   image.src = product.imageUrl;
   image.alt = product.name;
   image.loading = 'lazy';
-  image.addEventListener('error', () => {
-    visual.replaceChildren(document.createTextNode(product.brand));
-  }, { once: true });
+  image.decoding = 'async';
+  image.addEventListener('error', () => visual.replaceChildren(document.createTextNode(product.brand)), { once: true });
   visual.append(image);
   return visual;
 }
 
-function renderCatalogMessage(message) {
-  elements.productsGrid?.replaceChildren(createElement('p', 'empty-products', message));
-}
-
-function resolveApiOrigin() {
-  const configuredOrigin = document.querySelector('meta[name="api-origin"]')?.content.trim();
-  if (configuredOrigin) return configuredOrigin.replace(/\/$/, '');
-
-  const isLocalPreview = ['localhost', '127.0.0.1'].includes(window.location.hostname)
-    && window.location.port !== '3000';
-  return isLocalPreview || window.location.protocol === 'file:' ? 'http://localhost:3000' : '';
-}
-
-function resolveImageUrl(imageUrl) {
-  const value = String(imageUrl || '').trim();
-  if (!value || /^https:\/\//i.test(value)) return value;
-  return `${API_ORIGIN}${value.startsWith('/') ? value : `/${value}`}`;
-}
-
-function findProduct(productId) {
-  return products.find((product) => product.id === productId);
-}
-
+function renderCatalogMessage(message) { elements.productsGrid?.replaceChildren(createElement('p', 'empty-products', message)); }
+function findProduct(productId) { return products.find((product) => product.id === productId); }
 function setCurrentYear() {
   const year = document.getElementById('currentYear');
   if (year) year.textContent = String(new Date().getFullYear());
 }
-
 function createElement(tagName, className = '', text = '') {
   const element = document.createElement(tagName);
   if (className) element.className = className;
   if (text) element.textContent = text;
   return element;
 }
-
 function createIconButton({ className = '', icon, label }) {
   const button = createElement('button', className);
   const iconElement = document.createElement('i');
-
   button.type = 'button';
   button.setAttribute('aria-label', label);
   iconElement.dataset.lucide = icon;
   iconElement.setAttribute('aria-hidden', 'true');
   button.append(iconElement);
-
   return button;
 }
-
 function formatCurrency(value) {
-  return new Intl.NumberFormat('pt-BR', {
-    style: 'currency',
-    currency: 'BRL',
-  }).format(value);
+  return new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL' }).format(value);
 }
-
 function refreshIcons() {
-  window.lucide?.createIcons();
+  createIcons({
+    icons: { ArrowDown, Camera, MapPin, Menu, MessageCircle, Minus, Plus, Search, ShoppingBag, Trash2, X },
+  });
 }
